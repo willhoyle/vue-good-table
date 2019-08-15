@@ -13506,6 +13506,16 @@ var script$6 = {
           placeholder: 'Search Table'
         };
       }
+    },
+    expandedOptions: {
+      type: Object,
+      "default": function _default() {
+        return {
+          key: '',
+          expandedRows: [],
+          styleClass: ''
+        };
+      }
     }
   },
   data: function data() {
@@ -13608,6 +13618,25 @@ var script$6 = {
     }
   },
   computed: {
+    expandedStyleClass: function expandedStyleClass() {
+      return this.expandedOptions.styleClass || '';
+    },
+    isExpanded: function isExpanded() {
+      var _this = this;
+
+      return function (row) {
+        var idGetter = typeof _this.expandedOptions.key == 'function' ? _this.expandedOptions.key : function (row) {
+          return row[_this.expandedOptions.key];
+        };
+        var id = idGetter(row);
+        return _this.expandedOptions.expandedRows.some(function (v) {
+          return v == id;
+        });
+      };
+    },
+    hasExpandedSlot: function hasExpandedSlot() {
+      return !!this.$scopedSlots['expanded-row'];
+    },
     hasFooterSlot: function hasFooterSlot() {
       return !!this.$slots['table-actions-bottom'];
     },
@@ -13746,7 +13775,7 @@ var script$6 = {
     // or sort type changes
     //----------------------------------------
     processedRows: function processedRows() {
-      var _this = this;
+      var _this2 = this;
 
       // we only process rows when mode is local
       var computedRows = this.filteredRows;
@@ -13765,14 +13794,14 @@ var script$6 = {
         });
         var filteredRows = [];
         lodash_foreach(allRows, function (row) {
-          lodash_foreach(_this.columns, function (col) {
+          lodash_foreach(_this2.columns, function (col) {
             // if col does not have search disabled,
             if (!col.globalSearchDisabled) {
               // if a search function is provided,
               // use that for searching, otherwise,
               // use the default search behavior
-              if (_this.searchFn) {
-                var foundMatch = _this.searchFn(row, col, _this.collectFormatted(row, col), _this.searchTerm);
+              if (_this2.searchFn) {
+                var foundMatch = _this2.searchFn(row, col, _this2.collectFormatted(row, col), _this2.searchTerm);
 
                 if (foundMatch) {
                   filteredRows.push(row);
@@ -13780,7 +13809,7 @@ var script$6 = {
                 }
               } else {
                 // comparison
-                var matched = defaultType.filterPredicate(_this.collectFormatted(row, col), _this.searchTerm, _this.searchSkipDiacritics);
+                var matched = defaultType.filterPredicate(_this2.collectFormatted(row, col), _this2.searchTerm, _this2.searchSkipDiacritics);
 
                 if (matched) {
                   filteredRows.push(row);
@@ -13817,21 +13846,21 @@ var script$6 = {
             //* we need to get column for each sort
             var sortValue;
 
-            for (var i = 0; i < _this.sorts.length; i += 1) {
-              var column = _this.getColumnForField(_this.sorts[i].field);
+            for (var i = 0; i < _this2.sorts.length; i += 1) {
+              var column = _this2.getColumnForField(_this2.sorts[i].field);
 
-              var xvalue = _this.collect(xRow, _this.sorts[i].field);
+              var xvalue = _this2.collect(xRow, _this2.sorts[i].field);
 
-              var yvalue = _this.collect(yRow, _this.sorts[i].field); //* if a custom sort function has been provided we use that
+              var yvalue = _this2.collect(yRow, _this2.sorts[i].field); //* if a custom sort function has been provided we use that
 
 
               var sortFn = column.sortFn;
 
               if (sortFn && typeof sortFn === 'function') {
-                sortValue = sortValue || sortFn(xvalue, yvalue, column, xRow, yRow) * (_this.sorts[i].type === 'desc' ? -1 : 1);
+                sortValue = sortValue || sortFn(xvalue, yvalue, column, xRow, yRow) * (_this2.sorts[i].type === 'desc' ? -1 : 1);
               } else {
                 //* else we use our own sort
-                sortValue = sortValue || column.typeDef.compare(xvalue, yvalue, column) * (_this.sorts[i].type === 'desc' ? -1 : 1);
+                sortValue = sortValue || column.typeDef.compare(xvalue, yvalue, column) * (_this2.sorts[i].type === 'desc' ? -1 : 1);
               }
             }
 
@@ -13966,18 +13995,18 @@ var script$6 = {
       });
     },
     unselectAllInternal: function unselectAllInternal(forceAll) {
-      var _this2 = this;
+      var _this3 = this;
 
       var rows = this.selectAllByPage && !forceAll ? this.paginated : this.filteredRows;
       lodash_foreach(rows, function (headerRow, i) {
         lodash_foreach(headerRow.children, function (row, j) {
-          _this2.$set(row, 'vgtSelected', false);
+          _this3.$set(row, 'vgtSelected', false);
         });
       });
       this.emitSelectedRows();
     },
     toggleSelectAll: function toggleSelectAll() {
-      var _this3 = this;
+      var _this4 = this;
 
       if (this.allSelected) {
         this.unselectAllInternal();
@@ -13987,7 +14016,7 @@ var script$6 = {
       var rows = this.selectAllByPage ? this.paginated : this.filteredRows;
       lodash_foreach(rows, function (headerRow) {
         lodash_foreach(headerRow.children, function (row) {
-          _this3.$set(row, 'vgtSelected', true);
+          _this4.$set(row, 'vgtSelected', true);
         });
       });
       this.emitSelectedRows();
@@ -14210,9 +14239,10 @@ var script$6 = {
       if (this.rtl) isRight = true;
       var classes = {
         'vgt-right-align': isRight,
-        'vgt-left-align': !isRight
-      }; // for td we need to check if value is
-      // a function.
+        'vgt-left-align': !isRight // for td we need to check if value is
+        // a function.
+
+      };
 
       if (typeof custom === 'function') {
         classes[custom(row)] = true;
@@ -14224,7 +14254,7 @@ var script$6 = {
     },
     // method to filter rows
     filterRows: function filterRows(columnFilters) {
-      var _this4 = this;
+      var _this5 = this;
 
       var fromFilter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
       // if (!this.rows.length) return;
@@ -14265,19 +14295,19 @@ var script$6 = {
         }
 
         var _loop = function _loop(i) {
-          var col = _this4.typedColumns[i];
+          var col = _this5.typedColumns[i];
 
-          if (_this4.columnFilters[col.field]) {
+          if (_this5.columnFilters[col.field]) {
             computedRows = lodash_foreach(computedRows, function (headerRow) {
               var newChildren = headerRow.children.filter(function (row) {
                 // If column has a custom filter, use that.
                 if (col.filterOptions && typeof col.filterOptions.filterFn === 'function') {
-                  return col.filterOptions.filterFn(_this4.collect(row, col.field), _this4.columnFilters[col.field]);
+                  return col.filterOptions.filterFn(_this5.collect(row, col.field), _this5.columnFilters[col.field]);
                 } // Otherwise Use default filters
 
 
                 var typeDef = col.typeDef;
-                return typeDef.filterPredicate(_this4.collect(row, col.field), _this4.columnFilters[col.field]);
+                return typeDef.filterPredicate(_this5.collect(row, col.field), _this5.columnFilters[col.field]);
               }); // should we remove the header?
 
               headerRow.children = newChildren;
@@ -14322,7 +14352,7 @@ var script$6 = {
       return originalRows;
     },
     initializePagination: function initializePagination() {
-      var _this5 = this;
+      var _this6 = this;
 
       var _this$paginationOptio = this.paginationOptions,
           enabled = _this$paginationOptio.enabled,
@@ -14360,6 +14390,7 @@ var script$6 = {
         this.customRowsPerPageDropdown = perPageDropdown;
 
         if (!this.perPage) {
+
           var _perPageDropdown = _slicedToArray(perPageDropdown, 1);
 
           this.perPage = _perPageDropdown[0];
@@ -14400,7 +14431,7 @@ var script$6 = {
 
       if (typeof setCurrentPage === 'number') {
         setTimeout(function () {
-          _this5.changePage(setCurrentPage);
+          _this6.changePage(setCurrentPage);
         }, 500);
       }
     },
@@ -14495,7 +14526,13 @@ var script$6 = {
       if (typeof clearSelectionText === 'string') {
         this.clearSelectionText = clearSelectionText;
       }
-    }
+    } // initializeColumns() {
+    //   // take care of default sort on mount
+    //   if (this.defaultSortBy) {
+    //     this.handleDefaultSort();
+    //   }
+    // },
+
   },
   mounted: function mounted() {
     if (this.perPage) {
@@ -14529,7 +14566,7 @@ var __vue_render__$6 = function __vue_render__() {
     staticClass: "vgt-loading vgt-center-align"
   }, [_vm._t("loadingContent", [_c('span', {
     staticClass: "vgt-loading__content"
-  }, [_vm._v("\n        Loading...\n      ")])])], 2) : _vm._e(), _vm._v(" "), _c('div', {
+  }, [_vm._v("Loading...")])])], 2) : _vm._e(), _vm._v(" "), _c('div', {
     staticClass: "vgt-inner-wrap",
     "class": {
       'is-loading': _vm.isLoading
@@ -14589,7 +14626,7 @@ var __vue_render__$6 = function __vue_render__() {
         return _vm.unselectAllInternal(true);
       }
     }
-  }, [_vm._v("\n        " + _vm._s(_vm.clearSelectionText) + "\n      ")]), _vm._v(" "), _c('div', {
+  }, [_vm._v(_vm._s(_vm.clearSelectionText))]), _vm._v(" "), _c('div', {
     staticClass: "vgt-selection-info-row__actions vgt-pull-right"
   }, [_vm._t("selected-row-actions")], 2)]) : _vm._e(), _vm._v(" "), _c('div', {
     staticClass: "vgt-fixed-header"
@@ -14686,7 +14723,7 @@ var __vue_render__$6 = function __vue_render__() {
         }
       }], null, true)
     }) : _vm._e(), _vm._v(" "), _vm._l(headerRow.children, function (row, index) {
-      return _c('tr', {
+      return [_c('tr', {
         key: row.originalIndex,
         "class": _vm.getRowStyleClass(row),
         on: {
@@ -14708,7 +14745,7 @@ var __vue_render__$6 = function __vue_render__() {
         }
       }, [_vm.lineNumbers ? _c('th', {
         staticClass: "line-numbers"
-      }, [_vm._v("\n              " + _vm._s(_vm.getCurrentIndex(index)) + "\n            ")]) : _vm._e(), _vm._v(" "), _vm.selectable ? _c('th', {
+      }, [_vm._v(_vm._s(_vm.getCurrentIndex(index)))]) : _vm._e(), _vm._v(" "), _vm.selectable ? _c('th', {
         staticClass: "vgt-checkbox-col",
         on: {
           "click": function click($event) {
@@ -14732,7 +14769,7 @@ var __vue_render__$6 = function __vue_render__() {
               return _vm.onCellClicked(row, column, index, $event);
             }
           }
-        }, [_vm._t("table-row", [!column.html ? _c('span', [_vm._v("\n                  " + _vm._s(_vm.collectFormatted(row, column)) + "\n                ")]) : _vm._e(), _vm._v(" "), column.html ? _c('span', {
+        }, [_vm._t("table-row", [!column.html ? _c('span', [_vm._v(_vm._s(_vm.collectFormatted(row, column)))]) : _vm._e(), _vm._v(" "), column.html ? _c('span', {
           domProps: {
             "innerHTML": _vm._s(_vm.collect(row, column.field))
           }
@@ -14742,7 +14779,18 @@ var __vue_render__$6 = function __vue_render__() {
           "formattedRow": _vm.formattedRow(row),
           "index": index
         })], 2) : _vm._e();
-      })], 2);
+      })], 2), _vm._v(" "), _vm.hasExpandedSlot && _vm.isExpanded(row) ? _c('tr', {
+        key: row.originalIndex + '-expanded',
+        "class": _vm.expandedStyleClass
+      }, [_c('td', {
+        attrs: {
+          "colspan": _vm.fullColspan
+        }
+      }, [_vm._t("expanded-row", null, {
+        "row": row,
+        "formattedRow": _vm.formattedRow(row),
+        "index": index
+      })], 2)]) : _vm._e()];
     }), _vm._v(" "), _vm.groupHeaderOnBottom ? _c('vgt-header-row', {
       attrs: {
         "header-row": headerRow,
@@ -14771,7 +14819,7 @@ var __vue_render__$6 = function __vue_render__() {
     }
   }, [_vm._t("emptystate", [_c('div', {
     staticClass: "vgt-center-align vgt-text-disabled"
-  }, [_vm._v("\n                  No data for table\n                ")])])], 2)])]) : _vm._e()], 2)]), _vm._v(" "), _vm.hasFooterSlot ? _c('div', {
+  }, [_vm._v("No data for table")])])], 2)])]) : _vm._e()], 2)]), _vm._v(" "), _vm.hasFooterSlot ? _c('div', {
     staticClass: "vgt-wrap__actions-footer"
   }, [_vm._t("table-actions-bottom")], 2) : _vm._e(), _vm._v(" "), _vm.paginate && _vm.paginateOnBottom ? _vm._t("pagination-bottom", [_c('vgt-pagination', {
     ref: "paginationBottom",
