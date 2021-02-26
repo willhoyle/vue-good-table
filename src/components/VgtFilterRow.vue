@@ -2,46 +2,59 @@
 <tr v-if="hasFilterRow">
   <th v-if="lineNumbers"></th>
   <th v-if="selectable"></th>
-  <th class="filter-th"
+  <th
     v-for="(column, index) in columns" :key="index"
-    v-if="!column.hidden">
+    v-if="!column.hidden"
+    :class="getClasses(column)"
+    >
 
-    <div
-      v-if="isFilterable(column)">
-      <input v-if="!isDropdown(column)"
-        type="text"
-        class="vgt-input"
-        :placeholder="getPlaceholder(column)"
-        :value="columnFilters[column.field]"
-        @keyup.enter="updateFiltersOnEnter(column, $event.target.value)"
-        @input="updateFiltersOnKeyup(column, $event.target.value)" />
+    <slot
+        name="column-filter"
+        :column="column"
+        :updateFilters="updateSlotFilter"
+    >
 
-      <!-- options are a list of primitives -->
-      <select v-if="isDropdownArray(column)"
-        class="vgt-select"
-        :value="columnFilters[column.field]"
-        @change="updateFilters(column, $event.target.value)">
+      <div
+        v-if="isFilterable(column)">
+        <input v-if="!isDropdown(column)"
+          :name="getName(column)"
+          type="text"
+          class="vgt-input"
+          :placeholder="getPlaceholder(column)"
+          :value="columnFilters[fieldKey(column.field)]"
+          @keyup.enter="updateFiltersOnEnter(column, $event.target.value)"
+          @input="updateFiltersOnKeyup(column, $event.target.value)" />
+
+        <!-- options are a list of primitives -->
+        <select v-if="isDropdownArray(column)"
+          :name="getName(column)"
+          class="vgt-select"
+          :value="columnFilters[fieldKey(column.field)]"
+          @change="updateFiltersImmediately(column.field, $event.target.value)">
+            <option value="" key="-1">{{ getPlaceholder(column) }}</option>
+            <option
+              v-for="(option, i) in column.filterOptions.filterDropdownItems"
+              :key="i"
+              :value="option">
+              {{ option }}
+            </option>
+        </select>
+
+        <!-- options are a list of objects with text and value -->
+        <select v-if="isDropdownObjects(column)"
+          :name="getName(column)"
+          class="vgt-select"
+          :value="columnFilters[fieldKey(column.field)]"
+          @change="updateFiltersImmediately(column.field, $event.target.value)">
           <option value="" key="-1">{{ getPlaceholder(column) }}</option>
           <option
             v-for="(option, i) in column.filterOptions.filterDropdownItems"
             :key="i"
-            :value="option">
-            {{ option }}
-          </option>
-      </select>
+            :value="option.value">{{ option.text }}</option>
+        </select>
 
-      <!-- options are a list of objects with text and value -->
-      <select v-if="isDropdownObjects(column)"
-        class="vgt-select"
-        :value="columnFilters[column.field]"
-        @change="updateFilters(column, $event.target.value, true)">
-        <option value="" key="-1">{{ getPlaceholder(column) }}</option>
-        <option
-          v-for="(option, i) in column.filterOptions.filterDropdownItems"
-          :key="i"
-          :value="option.value">{{ option.text }}</option>
-      </select>
-    </div>
+      </div>
+    </slot>
   </th>
 </tr>
 </template>
@@ -75,6 +88,7 @@ export default {
     };
   },
   computed: {
+
     // to create a filter row, we need to
     // make sure that there is atleast 1 column
     // that requires filtering
@@ -91,8 +105,17 @@ export default {
     },
   },
   methods: {
+
+    fieldKey(field) {
+      if (typeof(field) === 'function' && field.name) {
+        return field.name;
+      }
+      return field;
+    },
+
     reset(emitEvent = false) {
       this.columnFilters = {};
+
       if (emitEvent) {
         this.$emit('filter-changed', this.columnFilters);
       }
@@ -119,15 +142,24 @@ export default {
         && typeof column.filterOptions.filterDropdownItems[0] !== 'object';
     },
 
+    getClasses(column) {
+      const firstClass = 'filter-th';
+      return (column.filterOptions && column.filterOptions.styleClass) ? [firstClass, ...column.filterOptions.styleClass.split(' ')].join(' ') : firstClass;
+    },
+
     // get column's defined placeholder or default one
     getPlaceholder(column) {
       const placeholder = (this.isFilterable(column) && column.filterOptions.placeholder) || `Filter ${column.label}`;
       return placeholder;
     },
 
+    getName(column) {
+      return `vgt-${this.fieldKey(column.field)}`;
+    },
+
     updateFiltersOnEnter(column, value) {
       if (this.timer) clearTimeout(this.timer);
-      this.updateFiltersImmediately(column, value);
+      this.updateFiltersImmediately(column.field, value);
     },
 
     updateFiltersOnKeyup(column, value) {
@@ -136,17 +168,25 @@ export default {
       this.updateFilters(column, value);
     },
 
+    updateSlotFilter(column, value) {
+      let fieldToFilter = column.filterOptions.slotFilterField || column.field;
+      if (typeof column.filterOptions.formatValue === 'function') {
+        value = column.filterOptions.formatValue(value);
+      }
+      this.updateFiltersImmediately(fieldToFilter, value);
+    },
+
     // since vue doesn't detect property addition and deletion, we
     // need to create helper function to set property etc
     updateFilters(column, value) {
       if (this.timer) clearTimeout(this.timer);
       this.timer = setTimeout(() => {
-        this.updateFiltersImmediately(column, value);
+        this.updateFiltersImmediately(column.field, value);
       }, 400);
     },
 
-    updateFiltersImmediately(column, value) {
-      this.$set(this.columnFilters, column.field, value);
+    updateFiltersImmediately(field, value) {
+      this.$set(this.columnFilters, this.fieldKey(field), value);
       this.$emit('filter-changed', this.columnFilters);
     },
 
@@ -158,7 +198,7 @@ export default {
         if (this.isFilterable(col)
           && typeof col.filterOptions.filterValue !== 'undefined'
           && col.filterOptions.filterValue !== null) {
-          this.$set(this.columnFilters, col.field, col.filterOptions.filterValue);
+          this.$set(this.columnFilters, this.fieldKey(col.field), col.filterOptions.filterValue);
           // this.updateFilters(col, col.filterOptions.filterValue);
           // this.$set(col.filterOptions, 'filterValue', undefined);
         }

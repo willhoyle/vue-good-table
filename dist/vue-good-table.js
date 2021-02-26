@@ -1,5 +1,5 @@
 /**
- * vue-good-table v2.18.0
+ * vue-good-table v2.21.4
  * (c) 2018-present xaksis <shay@crayonbits.com>
  * https://github.com/xaksis/vue-good-table
  * Released under the MIT License.
@@ -9,9 +9,11 @@
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
   (global = global || self, factory(global['vue-good-table'] = {}));
-}(this, function (exports) { 'use strict';
+}(this, (function (exports) { 'use strict';
 
   function _typeof(obj) {
+    "@babel/helpers - typeof";
+
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
       _typeof = function (obj) {
         return typeof obj;
@@ -26,19 +28,15 @@
   }
 
   function _slicedToArray(arr, i) {
-    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
+    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
   }
 
   function _toConsumableArray(arr) {
-    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
+    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
   }
 
   function _arrayWithoutHoles(arr) {
-    if (Array.isArray(arr)) {
-      for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-      return arr2;
-    }
+    if (Array.isArray(arr)) return _arrayLikeToArray(arr);
   }
 
   function _arrayWithHoles(arr) {
@@ -46,10 +44,11 @@
   }
 
   function _iterableToArray(iter) {
-    if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
+    if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter);
   }
 
   function _iterableToArrayLimit(arr, i) {
+    if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
     var _arr = [];
     var _n = true;
     var _d = false;
@@ -75,12 +74,29 @@
     return _arr;
   }
 
+  function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(o);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+  }
+
+  function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+
+    for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+
+    return arr2;
+  }
+
   function _nonIterableSpread() {
-    throw new TypeError("Invalid attempt to spread non-iterable instance");
+    throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
   function _nonIterableRest() {
-    throw new TypeError("Invalid attempt to destructure non-iterable instance");
+    throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
   /**
@@ -7390,6 +7406,7 @@
     },
     filterPredicate: function filterPredicate(rowval, filter) {
       var skipDiacritics = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+      var fromDropdown = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
 
       // take care of nulls
       if (typeof rowval === 'undefined' || rowval === null) {
@@ -7401,7 +7418,7 @@
 
       var searchTerm = skipDiacritics ? filter.toLowerCase() : diacriticless(escapeRegExp(filter).toLowerCase()); // comparison
 
-      return rowValue.indexOf(searchTerm) > -1;
+      return fromDropdown ? rowValue === searchTerm : rowValue.indexOf(searchTerm) > -1;
     },
     compare: function compare(x, y) {
       function cook(d) {
@@ -7417,6 +7434,18 @@
     }
   };
 
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
   //
   //
   //
@@ -7449,7 +7478,9 @@
       }
     },
     data: function data() {
-      return {};
+      return {
+        id: this.getId()
+      };
     },
     computed: {
       pageInfo: function pageInfo() {
@@ -7457,6 +7488,9 @@
       }
     },
     methods: {
+      getId: function getId() {
+        return "vgt-page-input-".concat(Math.floor(Math.random() * Date.now()));
+      },
       changePage: function changePage(event) {
         var value = parseInt(event.target.value, 10); //! invalid number
 
@@ -7474,90 +7508,80 @@
     components: {}
   };
 
-  function normalizeComponent(template, style, script, scopeId, isFunctionalTemplate, moduleIdentifier
-  /* server only */
-  , shadowMode, createInjector, createInjectorSSR, createInjectorShadow) {
-    if (typeof shadowMode !== 'boolean') {
-      createInjectorSSR = createInjector;
-      createInjector = shadowMode;
-      shadowMode = false;
-    } // Vue.extend constructor export interop.
-
-
-    var options = typeof script === 'function' ? script.options : script; // render functions
-
-    if (template && template.render) {
-      options.render = template.render;
-      options.staticRenderFns = template.staticRenderFns;
-      options._compiled = true; // functional template
-
-      if (isFunctionalTemplate) {
-        options.functional = true;
+  function normalizeComponent(template, style, script, scopeId, isFunctionalTemplate, moduleIdentifier /* server only */, shadowMode, createInjector, createInjectorSSR, createInjectorShadow) {
+      if (typeof shadowMode !== 'boolean') {
+          createInjectorSSR = createInjector;
+          createInjector = shadowMode;
+          shadowMode = false;
       }
-    } // scopedId
-
-
-    if (scopeId) {
-      options._scopeId = scopeId;
-    }
-
-    var hook;
-
-    if (moduleIdentifier) {
-      // server build
-      hook = function hook(context) {
-        // 2.3 injection
-        context = context || // cached call
-        this.$vnode && this.$vnode.ssrContext || // stateful
-        this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext; // functional
-        // 2.2 with runInNewContext: true
-
-        if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
-          context = __VUE_SSR_CONTEXT__;
-        } // inject component styles
-
-
-        if (style) {
-          style.call(this, createInjectorSSR(context));
-        } // register component module identifier for async chunk inference
-
-
-        if (context && context._registeredComponents) {
-          context._registeredComponents.add(moduleIdentifier);
-        }
-      }; // used by ssr in case component is cached and beforeCreate
-      // never gets called
-
-
-      options._ssrRegister = hook;
-    } else if (style) {
-      hook = shadowMode ? function () {
-        style.call(this, createInjectorShadow(this.$root.$options.shadowRoot));
-      } : function (context) {
-        style.call(this, createInjector(context));
-      };
-    }
-
-    if (hook) {
-      if (options.functional) {
-        // register for functional component in vue file
-        var originalRender = options.render;
-
-        options.render = function renderWithStyleInjection(h, context) {
-          hook.call(context);
-          return originalRender(h, context);
-        };
-      } else {
-        // inject component registration as beforeCreate hook
-        var existing = options.beforeCreate;
-        options.beforeCreate = existing ? [].concat(existing, hook) : [hook];
+      // Vue.extend constructor export interop.
+      const options = typeof script === 'function' ? script.options : script;
+      // render functions
+      if (template && template.render) {
+          options.render = template.render;
+          options.staticRenderFns = template.staticRenderFns;
+          options._compiled = true;
+          // functional template
+          if (isFunctionalTemplate) {
+              options.functional = true;
+          }
       }
-    }
-
-    return script;
+      // scopedId
+      if (scopeId) {
+          options._scopeId = scopeId;
+      }
+      let hook;
+      if (moduleIdentifier) {
+          // server build
+          hook = function (context) {
+              // 2.3 injection
+              context =
+                  context || // cached call
+                      (this.$vnode && this.$vnode.ssrContext) || // stateful
+                      (this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext); // functional
+              // 2.2 with runInNewContext: true
+              if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
+                  context = __VUE_SSR_CONTEXT__;
+              }
+              // inject component styles
+              if (style) {
+                  style.call(this, createInjectorSSR(context));
+              }
+              // register component module identifier for async chunk inference
+              if (context && context._registeredComponents) {
+                  context._registeredComponents.add(moduleIdentifier);
+              }
+          };
+          // used by ssr in case component is cached and beforeCreate
+          // never gets called
+          options._ssrRegister = hook;
+      }
+      else if (style) {
+          hook = shadowMode
+              ? function (context) {
+                  style.call(this, createInjectorShadow(context, this.$root.$options.shadowRoot));
+              }
+              : function (context) {
+                  style.call(this, createInjector(context));
+              };
+      }
+      if (hook) {
+          if (options.functional) {
+              // register for functional component in vue file
+              const originalRender = options.render;
+              options.render = function renderWithStyleInjection(h, context) {
+                  hook.call(context);
+                  return originalRender(h, context);
+              };
+          }
+          else {
+              // inject component registration as beforeCreate hook
+              const existing = options.beforeCreate;
+              options.beforeCreate = existing ? [].concat(existing, hook) : [hook];
+          }
+      }
+      return script;
   }
-
-  var normalizeComponent_1 = normalizeComponent;
 
   /* script */
   var __vue_script__ = script;
@@ -7572,9 +7596,23 @@
 
     return _c('div', {
       staticClass: "footer__navigation__page-info"
-    }, [_vm._v("\n  " + _vm._s(_vm.pageText) + " "), _c('input', {
+    }, [_c('form', {
+      on: {
+        "submit": function submit($event) {
+          $event.preventDefault();
+        }
+      }
+    }, [_c('label', {
+      staticClass: "page-info__label",
+      attrs: {
+        "for": _vm.id
+      }
+    }, [_c('span', [_vm._v(_vm._s(_vm.pageText))]), _vm._v(" "), _c('input', {
       staticClass: "footer__navigation__page-info__current-entry",
       attrs: {
+        "id": _vm.id,
+        "aria-describedby": "change-page-hint",
+        "aria-controls": "vgb-table",
         "type": "text"
       },
       domProps: {
@@ -7590,7 +7628,14 @@
           return _vm.changePage($event);
         }
       }
-    }), _vm._v(" " + _vm._s(_vm.pageInfo) + "\n")]);
+    }), _vm._v(" "), _c('span', [_vm._v(_vm._s(_vm.pageInfo))])]), _vm._v(" "), _c('span', {
+      staticStyle: {
+        "display": "none"
+      },
+      attrs: {
+        "id": "change-page-hint"
+      }
+    }, [_vm._v("\n      Type a page number and press Enter to change the page.\n    ")])])]);
   };
 
   var __vue_staticRenderFns__ = [];
@@ -7599,7 +7644,7 @@
   var __vue_inject_styles__ = undefined;
   /* scoped */
 
-  var __vue_scope_id__ = "data-v-9a8cd1f4";
+  var __vue_scope_id__ = "data-v-46bdd082";
   /* module identifier */
 
   var __vue_module_identifier__ = undefined;
@@ -7610,10 +7655,12 @@
 
   /* style inject SSR */
 
-  var VgtPaginationPageInfo = normalizeComponent_1({
+  /* style inject shadow dom */
+
+  var __vue_component__ = /*#__PURE__*/normalizeComponent({
     render: __vue_render__,
     staticRenderFns: __vue_staticRenderFns__
-  }, __vue_inject_styles__, __vue_script__, __vue_scope_id__, __vue_is_functional_template__, __vue_module_identifier__, undefined, undefined);
+  }, __vue_inject_styles__, __vue_script__, __vue_scope_id__, __vue_is_functional_template__, __vue_module_identifier__, false, undefined, undefined, undefined);
 
   //
   var DEFAULT_ROWS_PER_PAGE_DROPDOWN = [10, 20, 30, 40, 50];
@@ -7629,6 +7676,9 @@
       perPage: {},
       rtl: {
         "default": false
+      },
+      perPageDropdownEnabled: {
+        "default": true
       },
       customRowsPerPageDropdown: {
         "default": function _default() {
@@ -7663,6 +7713,7 @@
     },
     data: function data() {
       return {
+        id: this.getId(),
         currentPage: 1,
         prevPage: 0,
         currentPerPage: 10,
@@ -7679,6 +7730,13 @@
       },
       customRowsPerPageDropdown: function customRowsPerPageDropdown() {
         this.handlePerPage();
+      },
+      total: {
+        handler: function handler(newValue, oldValue) {
+          if (this.rowsPerPageOptions.indexOf(this.currentPerPage) === -1) {
+            this.currentPerPage = newValue;
+          }
+        }
       }
     },
     computed: {
@@ -7697,7 +7755,7 @@
           first = 0;
         }
 
-        return "".concat(first, " - ").concat(last, " ").concat(this.ofText, " ").concat(this.total);
+        return "Showing ".concat(first, " to ").concat(last, " ").concat(this.ofText, " ").concat(this.total, " entries");
       },
       // Can go to next page
       nextIsPossible: function nextIsPossible() {
@@ -7709,6 +7767,9 @@
       }
     },
     methods: {
+      getId: function getId() {
+        return "vgt-select-rpp-".concat(Math.floor(Math.random() * Date.now()));
+      },
       // Change current page
       changePage: function changePage(pageNumber) {
         var emit = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
@@ -7758,7 +7819,7 @@
       handlePerPage: function handlePerPage() {
         //* if there's a custom dropdown then we use that
         if (this.customRowsPerPageDropdown !== null && Array.isArray(this.customRowsPerPageDropdown) && this.customRowsPerPageDropdown.length !== 0) {
-          this.rowsPerPageOptions = this.customRowsPerPageDropdown;
+          this.rowsPerPageOptions = lodash_clonedeep(this.customRowsPerPageDropdown);
         } else {
           //* otherwise we use the default rows per page dropdown
           this.rowsPerPageOptions = lodash_clonedeep(DEFAULT_ROWS_PER_PAGE_DROPDOWN);
@@ -7786,7 +7847,7 @@
     },
     mounted: function mounted() {},
     components: {
-      'pagination-page-info': VgtPaginationPageInfo
+      'pagination-page-info': __vue_component__
     }
   };
 
@@ -7803,11 +7864,14 @@
 
     return _c('div', {
       staticClass: "vgt-wrap__footer vgt-clearfix"
-    }, [_c('div', {
+    }, [_vm.perPageDropdownEnabled ? _c('div', {
       staticClass: "footer__row-count vgt-pull-left"
-    }, [_c('span', {
-      staticClass: "footer__row-count__label"
-    }, [_vm._v(_vm._s(_vm.rowsPerPageText))]), _vm._v(" "), _c('select', {
+    }, [_c('form', [_c('label', {
+      staticClass: "footer__row-count__label",
+      attrs: {
+        "for": _vm.id
+      }
+    }, [_vm._v(_vm._s(_vm.rowsPerPageText) + ":")]), _vm._v(" "), _c('select', {
       directives: [{
         name: "model",
         rawName: "v-model",
@@ -7816,8 +7880,10 @@
       }],
       staticClass: "footer__row-count__select",
       attrs: {
+        "id": _vm.id,
         "autocomplete": "off",
-        "name": "perPageSelect"
+        "name": "perPageSelect",
+        "aria-controls": "vgt-table"
       },
       on: {
         "change": [function ($event) {
@@ -7836,21 +7902,40 @@
         domProps: {
           "value": option
         }
-      }, [_vm._v("\n        " + _vm._s(option) + "\n      ")]);
+      }, [_vm._v("\n          " + _vm._s(option) + "\n        ")]);
     }), _vm._v(" "), _vm.paginateDropdownAllowAll ? _c('option', {
       domProps: {
         "value": _vm.total
       }
-    }, [_vm._v(_vm._s(_vm.allText))]) : _vm._e()], 2)]), _vm._v(" "), _c('div', {
+    }, [_vm._v(_vm._s(_vm.allText))]) : _vm._e()], 2)])]) : _vm._e(), _vm._v(" "), _c('div', {
       staticClass: "footer__navigation vgt-pull-right"
-    }, [_c('a', {
+    }, [_vm.mode === 'pages' ? _c('pagination-page-info', {
+      attrs: {
+        "totalRecords": _vm.total,
+        "lastPage": _vm.pagesCount,
+        "currentPage": _vm.currentPage,
+        "ofText": _vm.ofText,
+        "pageText": _vm.pageText
+      },
+      on: {
+        "page-changed": _vm.changePage
+      }
+    }) : _c('div', {
+      staticClass: "footer__navigation__info"
+    }, [_vm._v(_vm._s(_vm.paginatedInfo))]), _vm._v(" "), _c('button', {
+      directives: [{
+        name: "show",
+        rawName: "v-show",
+        value: _vm.prevIsPossible,
+        expression: "prevIsPossible"
+      }],
       staticClass: "footer__navigation__page-btn",
       "class": {
         disabled: !_vm.prevIsPossible
       },
       attrs: {
-        "href": "javascript:undefined",
-        "tabindex": "0"
+        "type": "button",
+        "aria-controls": "vgt-table"
       },
       on: {
         "click": function click($event) {
@@ -7864,28 +7949,24 @@
       "class": {
         'left': !_vm.rtl,
         'right': _vm.rtl
-      }
-    }), _vm._v(" "), _c('span', [_vm._v(_vm._s(_vm.prevText))])]), _vm._v(" "), _vm.mode === 'pages' ? _c('pagination-page-info', {
-      attrs: {
-        "totalRecords": _vm.total,
-        "lastPage": _vm.pagesCount,
-        "currentPage": _vm.currentPage,
-        "ofText": _vm.ofText,
-        "pageText": _vm.pageText
       },
-      on: {
-        "page-changed": _vm.changePage
+      attrs: {
+        "aria-hidden": "true"
       }
-    }) : _c('div', {
-      staticClass: "footer__navigation__info"
-    }, [_vm._v(_vm._s(_vm.paginatedInfo))]), _vm._v(" "), _c('a', {
+    }), _vm._v(" "), _c('span', [_vm._v(_vm._s(_vm.prevText))])]), _vm._v(" "), _c('button', {
+      directives: [{
+        name: "show",
+        rawName: "v-show",
+        value: _vm.nextIsPossible,
+        expression: "nextIsPossible"
+      }],
       staticClass: "footer__navigation__page-btn",
       "class": {
         disabled: !_vm.nextIsPossible
       },
       attrs: {
-        "href": "javascript:undefined",
-        "tabindex": "0"
+        "type": "button",
+        "aria-controls": "vgt-table"
       },
       on: {
         "click": function click($event) {
@@ -7899,6 +7980,9 @@
       "class": {
         'right': !_vm.rtl,
         'left': _vm.rtl
+      },
+      attrs: {
+        "aria-hidden": "true"
       }
     })])], 1)]);
   };
@@ -7920,11 +8004,19 @@
 
   /* style inject SSR */
 
-  var VgtPagination = normalizeComponent_1({
+  /* style inject shadow dom */
+
+  var __vue_component__$1 = /*#__PURE__*/normalizeComponent({
     render: __vue_render__$1,
     staticRenderFns: __vue_staticRenderFns__$1
-  }, __vue_inject_styles__$1, __vue_script__$1, __vue_scope_id__$1, __vue_is_functional_template__$1, __vue_module_identifier__$1, undefined, undefined);
+  }, __vue_inject_styles__$1, __vue_script__$1, __vue_scope_id__$1, __vue_is_functional_template__$1, __vue_module_identifier__$1, false, undefined, undefined, undefined);
 
+  //
+  //
+  //
+  //
+  //
+  //
   //
   //
   //
@@ -7952,7 +8044,8 @@
     props: ['value', 'searchEnabled', 'globalSearchPlaceholder'],
     data: function data() {
       return {
-        globalSearchTerm: null
+        globalSearchTerm: null,
+        id: this.getId()
       };
     },
     computed: {
@@ -7969,6 +8062,9 @@
       },
       entered: function entered(value) {
         this.$emit('on-enter', value);
+      },
+      getId: function getId() {
+        return "vgt-search-".concat(Math.floor(Math.random() * Date.now()));
       }
     }
   };
@@ -7988,15 +8084,27 @@
       staticClass: "vgt-global-search vgt-clearfix"
     }, [_c('div', {
       staticClass: "vgt-global-search__input vgt-pull-left"
-    }, [_vm.searchEnabled ? _c('span', {
-      staticClass: "input__icon"
-    }, [_c('div', {
-      staticClass: "magnifying-glass"
-    })]) : _vm._e(), _vm._v(" "), _vm.searchEnabled ? _c('input', {
+    }, [_vm.searchEnabled ? _c('form', {
+      attrs: {
+        "role": "search"
+      },
+      on: {
+        "submit": function submit($event) {
+          $event.preventDefault();
+        }
+      }
+    }, [_c('label', {
+      attrs: {
+        "for": _vm.id
+      }
+    }, [_vm._m(0), _vm._v(" "), _c('span', {
+      staticClass: "sr-only"
+    }, [_vm._v("Search")])]), _vm._v(" "), _c('input', {
       staticClass: "vgt-input vgt-pull-left",
       attrs: {
+        "id": _vm.id,
         "type": "text",
-        "placeholder": _vm.globalSearchPlaceholder
+        "placeholder": null
       },
       domProps: {
         "value": _vm.value
@@ -8013,12 +8121,27 @@
           return _vm.entered($event.target.value);
         }
       }
-    }) : _vm._e()]), _vm._v(" "), _c('div', {
+    })]) : _vm._e()]), _vm._v(" "), _c('div', {
       staticClass: "vgt-global-search__actions vgt-pull-right"
     }, [_vm._t("internal-table-actions")], 2)]) : _vm._e();
   };
 
-  var __vue_staticRenderFns__$2 = [];
+  var __vue_staticRenderFns__$2 = [function () {
+    var _vm = this;
+
+    var _h = _vm.$createElement;
+
+    var _c = _vm._self._c || _h;
+
+    return _c('span', {
+      staticClass: "input__icon",
+      attrs: {
+        "aria-hidden": "true"
+      }
+    }, [_c('div', {
+      staticClass: "magnifying-glass"
+    })]);
+  }];
   /* style */
 
   var __vue_inject_styles__$2 = undefined;
@@ -8035,10 +8158,12 @@
 
   /* style inject SSR */
 
-  var VgtGlobalSearch = normalizeComponent_1({
+  /* style inject shadow dom */
+
+  var __vue_component__$2 = /*#__PURE__*/normalizeComponent({
     render: __vue_render__$2,
     staticRenderFns: __vue_staticRenderFns__$2
-  }, __vue_inject_styles__$2, __vue_script__$2, __vue_scope_id__$2, __vue_is_functional_template__$2, __vue_module_identifier__$2, undefined, undefined);
+  }, __vue_inject_styles__$2, __vue_script__$2, __vue_scope_id__$2, __vue_is_functional_template__$2, __vue_module_identifier__$2, false, undefined, undefined, undefined);
 
   var script$3 = {
     name: 'VgtFilterRow',
@@ -8077,6 +8202,13 @@
       }
     },
     methods: {
+      fieldKey: function fieldKey(field) {
+        if (typeof field === 'function' && field.name) {
+          return field.name;
+        }
+
+        return field;
+      },
       reset: function reset() {
         var emitEvent = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
         this.columnFilters = {};
@@ -8097,19 +8229,35 @@
       isDropdownArray: function isDropdownArray(column) {
         return this.isDropdown(column) && _typeof(column.filterOptions.filterDropdownItems[0]) !== 'object';
       },
+      getClasses: function getClasses(column) {
+        var firstClass = 'filter-th';
+        return column.filterOptions && column.filterOptions.styleClass ? [firstClass].concat(_toConsumableArray(column.filterOptions.styleClass.split(' '))).join(' ') : firstClass;
+      },
       // get column's defined placeholder or default one
       getPlaceholder: function getPlaceholder(column) {
         var placeholder = this.isFilterable(column) && column.filterOptions.placeholder || "Filter ".concat(column.label);
         return placeholder;
       },
+      getName: function getName(column) {
+        return "vgt-".concat(this.fieldKey(column.field));
+      },
       updateFiltersOnEnter: function updateFiltersOnEnter(column, value) {
         if (this.timer) clearTimeout(this.timer);
-        this.updateFiltersImmediately(column, value);
+        this.updateFiltersImmediately(column.field, value);
       },
       updateFiltersOnKeyup: function updateFiltersOnKeyup(column, value) {
         // if the trigger is enter, we don't filter on keyup
         if (column.filterOptions.trigger === 'enter') return;
         this.updateFilters(column, value);
+      },
+      updateSlotFilter: function updateSlotFilter(column, value) {
+        var fieldToFilter = column.filterOptions.slotFilterField || column.field;
+
+        if (typeof column.filterOptions.formatValue === 'function') {
+          value = column.filterOptions.formatValue(value);
+        }
+
+        this.updateFiltersImmediately(fieldToFilter, value);
       },
       // since vue doesn't detect property addition and deletion, we
       // need to create helper function to set property etc
@@ -8118,11 +8266,11 @@
 
         if (this.timer) clearTimeout(this.timer);
         this.timer = setTimeout(function () {
-          _this.updateFiltersImmediately(column, value);
+          _this.updateFiltersImmediately(column.field, value);
         }, 400);
       },
-      updateFiltersImmediately: function updateFiltersImmediately(column, value) {
-        this.$set(this.columnFilters, column.field, value);
+      updateFiltersImmediately: function updateFiltersImmediately(field, value) {
+        this.$set(this.columnFilters, this.fieldKey(field), value);
         this.$emit('filter-changed', this.columnFilters);
       },
       populateInitialFilters: function populateInitialFilters() {
@@ -8131,7 +8279,7 @@
           // filters supplied by user
 
           if (this.isFilterable(col) && typeof col.filterOptions.filterValue !== 'undefined' && col.filterOptions.filterValue !== null) {
-            this.$set(this.columnFilters, col.field, col.filterOptions.filterValue); // this.updateFilters(col, col.filterOptions.filterValue);
+            this.$set(this.columnFilters, this.fieldKey(col.field), col.filterOptions.filterValue); // this.updateFilters(col, col.filterOptions.filterValue);
             // this.$set(col.filterOptions, 'filterValue', undefined);
           }
         } //* lets emit event once all filters are set
@@ -8156,15 +8304,16 @@
     return _vm.hasFilterRow ? _c('tr', [_vm.lineNumbers ? _c('th') : _vm._e(), _vm._v(" "), _vm.selectable ? _c('th') : _vm._e(), _vm._v(" "), _vm._l(_vm.columns, function (column, index) {
       return !column.hidden ? _c('th', {
         key: index,
-        staticClass: "filter-th"
-      }, [_vm.isFilterable(column) ? _c('div', [!_vm.isDropdown(column) ? _c('input', {
+        "class": _vm.getClasses(column)
+      }, [_vm._t("column-filter", [_vm.isFilterable(column) ? _c('div', [!_vm.isDropdown(column) ? _c('input', {
         staticClass: "vgt-input",
         attrs: {
+          "name": _vm.getName(column),
           "type": "text",
           "placeholder": _vm.getPlaceholder(column)
         },
         domProps: {
-          "value": _vm.columnFilters[column.field]
+          "value": _vm.columnFilters[_vm.fieldKey(column.field)]
         },
         on: {
           "keyup": function keyup($event) {
@@ -8180,12 +8329,15 @@
         }
       }) : _vm._e(), _vm._v(" "), _vm.isDropdownArray(column) ? _c('select', {
         staticClass: "vgt-select",
+        attrs: {
+          "name": _vm.getName(column)
+        },
         domProps: {
-          "value": _vm.columnFilters[column.field]
+          "value": _vm.columnFilters[_vm.fieldKey(column.field)]
         },
         on: {
           "change": function change($event) {
-            return _vm.updateFilters(column, $event.target.value);
+            return _vm.updateFiltersImmediately(column.field, $event.target.value);
           }
         }
       }, [_c('option', {
@@ -8199,15 +8351,18 @@
           domProps: {
             "value": option
           }
-        }, [_vm._v("\n            " + _vm._s(option) + "\n          ")]);
+        }, [_vm._v("\n              " + _vm._s(option) + "\n            ")]);
       })], 2) : _vm._e(), _vm._v(" "), _vm.isDropdownObjects(column) ? _c('select', {
         staticClass: "vgt-select",
+        attrs: {
+          "name": _vm.getName(column)
+        },
         domProps: {
-          "value": _vm.columnFilters[column.field]
+          "value": _vm.columnFilters[_vm.fieldKey(column.field)]
         },
         on: {
           "change": function change($event) {
-            return _vm.updateFilters(column, $event.target.value, true);
+            return _vm.updateFiltersImmediately(column.field, $event.target.value);
           }
         }
       }, [_c('option', {
@@ -8222,7 +8377,10 @@
             "value": option.value
           }
         }, [_vm._v(_vm._s(option.text))]);
-      })], 2) : _vm._e()]) : _vm._e()]) : _vm._e();
+      })], 2) : _vm._e()]) : _vm._e()], {
+        "column": column,
+        "updateFilters": _vm.updateSlotFilter
+      })], 2) : _vm._e();
     })], 2) : _vm._e();
   };
 
@@ -8232,7 +8390,7 @@
   var __vue_inject_styles__$3 = undefined;
   /* scoped */
 
-  var __vue_scope_id__$3 = "data-v-836b007c";
+  var __vue_scope_id__$3 = "data-v-6ab04d42";
   /* module identifier */
 
   var __vue_module_identifier__$3 = undefined;
@@ -8243,15 +8401,34 @@
 
   /* style inject SSR */
 
-  var VgtFilterRow = normalizeComponent_1({
+  /* style inject shadow dom */
+
+  var __vue_component__$3 = /*#__PURE__*/normalizeComponent({
     render: __vue_render__$3,
     staticRenderFns: __vue_staticRenderFns__$3
-  }, __vue_inject_styles__$3, __vue_script__$3, __vue_scope_id__$3, __vue_is_functional_template__$3, __vue_module_identifier__$3, undefined, undefined);
+  }, __vue_inject_styles__$3, __vue_script__$3, __vue_scope_id__$3, __vue_is_functional_template__$3, __vue_module_identifier__$3, false, undefined, undefined, undefined);
+
+  var DEFAULT_SORT_TYPE = 'asc';
+  var SORT_TYPES = {
+    Ascending: 'asc',
+    Descending: 'desc',
+    None: 'none'
+  };
+
+  function getColumnFirstSortType(column) {
+    return column.firstSortType || DEFAULT_SORT_TYPE;
+  }
+
+  function getCurrentPrimarySort(sortArray, column) {
+    return sortArray.length === 1 && sortArray[0].field === column.field ? sortArray[0].type : undefined;
+  }
 
   function getNextSort(currentSort) {
-    if (currentSort === 'asc') return 'desc'; // if (currentSort === 'desc') return null;
+    if (currentSort === SORT_TYPES.Ascending) {
+      return SORT_TYPES.Descending;
+    }
 
-    return 'asc';
+    return SORT_TYPES.Ascending;
   }
 
   function getIndex(sortArray, column) {
@@ -8263,42 +8440,24 @@
   }
 
   var primarySort = function (sortArray, column) {
-    if (sortArray.length && sortArray.length === 1 && sortArray[0].field === column.field) {
-      var type = getNextSort(sortArray[0].type);
-
-      if (type) {
-        sortArray[0].type = getNextSort(sortArray[0].type);
-      } else {
-        sortArray = [];
-      }
-    } else {
-      sortArray = [{
-        field: column.field,
-        type: 'asc'
-      }];
-    }
-
-    return sortArray;
+    var currentPrimarySort = getCurrentPrimarySort(sortArray, column);
+    var nextPrimarySort = getNextSort(currentPrimarySort);
+    return [{
+      field: column.field,
+      type: currentPrimarySort ? nextPrimarySort : getColumnFirstSortType(column)
+    }];
   };
 
   var secondarySort = function (sortArray, column) {
-    //* this means that primary sort exists, we're
-    //* just adding a secondary sort
     var index = getIndex(sortArray, column);
 
     if (index === -1) {
       sortArray.push({
         field: column.field,
-        type: 'asc'
+        type: getColumnFirstSortType(column)
       });
     } else {
-      var type = getNextSort(sortArray[index].type);
-
-      if (type) {
-        sortArray[index].type = type;
-      } else {
-        sortArray.splice(index, 1);
-      }
+      sortArray[index].type = getNextSort(sortArray[index].type);
     }
 
     return sortArray;
@@ -8356,6 +8515,12 @@
       paginated: {}
     },
     watch: {
+      columns: {
+        handler: function handler() {
+          this.setColumnStyles();
+        },
+        immediate: true
+      },
       tableRef: {
         handler: function handler() {
           this.setColumnStyles();
@@ -8373,11 +8538,11 @@
     },
     data: function data() {
       return {
-        timer: null,
         checkBoxThStyle: {},
         lineNumberThStyle: {},
         columnStyles: [],
-        sorts: []
+        sorts: [],
+        ro: null
       };
     },
     computed: {},
@@ -8418,8 +8583,12 @@
 
         return null;
       },
+      getColumnSortLong: function getColumnSortLong(column) {
+        return this.getColumnSort(column) === 'asc' ? 'ascending' : 'descending';
+      },
       getHeaderClasses: function getHeaderClasses(column, index) {
         var classes = lodash_assign({}, this.getClasses(index, 'th'), {
+          sortable: this.isSortableColumn(column),
           'sorting sorting-desc': this.getColumnSort(column) === 'desc',
           'sorting sorting-asc': this.getColumnSort(column) === 'asc'
         });
@@ -8429,7 +8598,7 @@
         this.$emit('filter-changed', columnFilters);
       },
       getWidthStyle: function getWidthStyle(dom) {
-        if (window && window.getComputedStyle) {
+        if (window && window.getComputedStyle && dom) {
           var cellStyle = window.getComputedStyle(dom, null);
           return {
             width: cellStyle.width
@@ -8441,29 +8610,25 @@
         };
       },
       setColumnStyles: function setColumnStyles() {
-        var _this = this;
-
         var colStyles = [];
-        if (this.timer) clearTimeout(this.timer);
-        this.timer = setTimeout(function () {
-          for (var i = 0; i < _this.columns.length; i++) {
-            if (_this.tableRef) {
-              var skip = 0;
-              if (_this.selectable) skip++;
-              if (_this.lineNumbers) skip++;
-              var cell = _this.tableRef.rows[0].cells[i + skip];
-              colStyles.push(_this.getWidthStyle(cell));
-            } else {
-              colStyles.push({
-                minWidth: _this.columns[i].width ? _this.columns[i].width : 'auto',
-                maxWidth: _this.columns[i].width ? _this.columns[i].width : 'auto',
-                width: _this.columns[i].width ? _this.columns[i].width : 'auto'
-              });
-            }
-          }
 
-          _this.columnStyles = colStyles;
-        }, 200);
+        for (var i = 0; i < this.columns.length; i++) {
+          if (this.tableRef) {
+            var skip = 0;
+            if (this.selectable) skip++;
+            if (this.lineNumbers) skip++;
+            var cell = this.tableRef.rows[0].cells[i + skip];
+            colStyles.push(this.getWidthStyle(cell));
+          } else {
+            colStyles.push({
+              minWidth: this.columns[i].width ? this.columns[i].width : 'auto',
+              maxWidth: this.columns[i].width ? this.columns[i].width : 'auto',
+              width: this.columns[i].width ? this.columns[i].width : 'auto'
+            });
+          }
+        }
+
+        this.columnStyles = colStyles;
       },
       getColumnStyle: function getColumnStyle(column, index) {
         var styleObject = {
@@ -8484,14 +8649,31 @@
       }
     },
     mounted: function mounted() {
-      window.addEventListener('resize', this.setColumnStyles);
+      var _this = this;
+
+      this.$nextTick(function () {
+        // We're going to watch the parent element for resize events, and calculate column widths if it changes
+        _this.ro = new ResizeObserver(function () {
+          _this.setColumnStyles();
+        });
+
+        _this.ro.observe(_this.$parent.$el); // If this is a fixed-header table, we want to observe each column header from the non-fixed header.
+        // You can imagine two columns swapping widths, which wouldn't cause the above to trigger.
+        // This gets the first tr element of the primary table header, and iterates through its children (the th elements)
+
+
+        if (_this.tableRef) {
+          Array.from(_this.$parent.$refs['table-header-primary'].$el.children[0].children).forEach(function (header) {
+            _this.ro.observe(header);
+          });
+        }
+      });
     },
     beforeDestroy: function beforeDestroy() {
-      if (this.timer) clearTimeout(this.timer);
-      window.removeEventListener('resize', this.setColumnStyles);
+      this.ro.disconnect();
     },
     components: {
-      'vgt-filter-row': VgtFilterRow
+      'vgt-filter-row': __vue_component__$3
     }
   };
 
@@ -8507,9 +8689,15 @@
     var _c = _vm._self._c || _h;
 
     return _c('thead', [_c('tr', [_vm.lineNumbers ? _c('th', {
-      staticClass: "line-numbers"
+      staticClass: "line-numbers",
+      attrs: {
+        "scope": "col"
+      }
     }) : _vm._e(), _vm._v(" "), _vm.selectable ? _c('th', {
-      staticClass: "vgt-checkbox-col"
+      staticClass: "vgt-checkbox-col",
+      attrs: {
+        "scope": "col"
+      }
     }, [_c('input', {
       attrs: {
         "type": "checkbox"
@@ -8526,14 +8714,22 @@
         key: index,
         "class": _vm.getHeaderClasses(column, index),
         style: _vm.columnStyles[index],
+        attrs: {
+          "scope": "col",
+          "aria-sort": _vm.getColumnSortLong(column),
+          "aria-controls": "col-" + index
+        }
+      }, [_vm._t("table-column", [_vm._v("\n        " + _vm._s(column.label) + "\n      ")], {
+        "column": column
+      }), _vm._v(" "), _vm.isSortableColumn(column) ? _c('button', {
         on: {
           "click": function click($event) {
             return _vm.sort($event, column);
           }
         }
-      }, [_vm._t("table-column", [_c('span', [_vm._v(_vm._s(column.label))])], {
-        "column": column
-      })], 2) : _vm._e();
+      }, [_c('span', {
+        staticClass: "sr-only"
+      }, [_vm._v("\n          Sort table by " + _vm._s(column.label) + " in " + _vm._s(_vm.getColumnSortLong(column)) + " order\n          ")])]) : _vm._e()], 2) : _vm._e();
     })], 2), _vm._v(" "), _c("vgt-filter-row", {
       ref: "filter-row",
       tag: "tr",
@@ -8547,7 +8743,16 @@
       },
       on: {
         "filter-changed": _vm.filterRows
-      }
+      },
+      scopedSlots: _vm._u([{
+        key: "column-filter",
+        fn: function fn(props) {
+          return [_vm._t("column-filter", null, {
+            "column": props.column,
+            "updateFilters": props.updateFilters
+          })];
+        }
+      }], null, true)
     })], 1);
   };
 
@@ -8557,7 +8762,7 @@
   var __vue_inject_styles__$4 = undefined;
   /* scoped */
 
-  var __vue_scope_id__$4 = "data-v-7068df50";
+  var __vue_scope_id__$4 = undefined;
   /* module identifier */
 
   var __vue_module_identifier__$4 = undefined;
@@ -8568,11 +8773,43 @@
 
   /* style inject SSR */
 
-  var VgtTableHeader = normalizeComponent_1({
+  /* style inject shadow dom */
+
+  var __vue_component__$4 = /*#__PURE__*/normalizeComponent({
     render: __vue_render__$4,
     staticRenderFns: __vue_staticRenderFns__$4
-  }, __vue_inject_styles__$4, __vue_script__$4, __vue_scope_id__$4, __vue_is_functional_template__$4, __vue_module_identifier__$4, undefined, undefined);
+  }, __vue_inject_styles__$4, __vue_script__$4, __vue_scope_id__$4, __vue_is_functional_template__$4, __vue_module_identifier__$4, false, undefined, undefined, undefined);
 
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
   //
   //
   //
@@ -8632,6 +8869,13 @@
       selectable: {
         type: Boolean
       },
+      selectAllByGroup: {
+        type: Boolean
+      },
+      collapsable: {
+        type: [Boolean, Number],
+        "default": false
+      },
       collectFormatted: {
         type: Function
       },
@@ -8643,13 +8887,38 @@
       },
       fullColspan: {
         type: Number
+      },
+      groupIndex: {
+        type: Number
       }
     },
     data: function data() {
       return {};
     },
-    computed: {},
-    methods: {},
+    computed: {
+      allSelected: function allSelected() {
+        var headerRow = this.headerRow,
+            groupChildObject = this.groupChildObject;
+        return headerRow.children.filter(function (row) {
+          return row.vgtSelected;
+        }).length === headerRow.children.length;
+      }
+    },
+    methods: {
+      columnCollapsable: function columnCollapsable(currentIndex) {
+        if (this.collapsable === true) {
+          return currentIndex === 0;
+        }
+
+        return currentIndex === this.collapsable;
+      },
+      toggleSelectGroup: function toggleSelectGroup(event) {
+        this.$emit('on-select-group-change', {
+          groupIndex: this.groupIndex,
+          checked: event.target.checked
+        });
+      }
+    },
     mounted: function mounted() {},
     components: {}
   };
@@ -8670,22 +8939,73 @@
       attrs: {
         "colspan": _vm.fullColspan
       }
-    }, [_vm._t("table-header-row", [_vm.headerRow.html ? _c('span', {
+    }, [_vm.selectAllByGroup ? [_vm._t("table-header-group-select", [_c('input', {
+      attrs: {
+        "type": "checkbox"
+      },
+      domProps: {
+        "checked": _vm.allSelected
+      },
+      on: {
+        "change": function change($event) {
+          return _vm.toggleSelectGroup($event);
+        }
+      }
+    })], {
+      "columns": _vm.columns,
+      "row": _vm.headerRow
+    })] : _vm._e(), _vm._v(" "), _c('span', {
+      on: {
+        "click": function click($event) {
+          _vm.collapsable ? _vm.$emit('vgtExpand', !_vm.headerRow.vgtIsExpanded) : function () {};
+        }
+      }
+    }, [_vm.collapsable ? _c('span', {
+      staticClass: "triangle",
+      "class": {
+        'expand': _vm.headerRow.vgtIsExpanded
+      }
+    }) : _vm._e(), _vm._v(" "), _vm._t("table-header-row", [_vm.headerRow.html ? _c('span', {
       domProps: {
         "innerHTML": _vm._s(_vm.headerRow.label)
       }
-    }) : _c('span', [_vm._v("\n        " + _vm._s(_vm.headerRow.label) + "\n      ")])], {
+    }) : _c('span', [_vm._v("\n          " + _vm._s(_vm.headerRow.label) + "\n        ")])], {
       "row": _vm.headerRow
-    })], 2) : _vm._e(), _vm._v(" "), _vm.headerRow.mode !== 'span' && _vm.lineNumbers ? _c('th', {
+    })], 2)], 2) : _vm._e(), _vm._v(" "), _vm.headerRow.mode !== 'span' && _vm.lineNumbers ? _c('th', {
       staticClass: "vgt-row-header"
     }) : _vm._e(), _vm._v(" "), _vm.headerRow.mode !== 'span' && _vm.selectable ? _c('th', {
       staticClass: "vgt-row-header"
-    }) : _vm._e(), _vm._v(" "), _vm._l(_vm.columns, function (column, i) {
+    }, [_vm.selectAllByGroup ? [_vm._t("table-header-group-select", [_c('input', {
+      attrs: {
+        "type": "checkbox"
+      },
+      domProps: {
+        "checked": _vm.allSelected
+      },
+      on: {
+        "change": function change($event) {
+          return _vm.toggleSelectGroup($event);
+        }
+      }
+    })], {
+      "columns": _vm.columns,
+      "row": _vm.headerRow
+    })] : _vm._e()], 2) : _vm._e(), _vm._v(" "), _vm._l(_vm.columns, function (column, i) {
       return _vm.headerRow.mode !== 'span' && !column.hidden ? _c('th', {
         key: i,
         staticClass: "vgt-row-header",
-        "class": _vm.getClasses(i, 'td')
-      }, [_vm._t("table-header-row", [!column.html ? _c('span', [_vm._v("\n        " + _vm._s(_vm.collectFormatted(_vm.headerRow, column, true)) + "\n      ")]) : _vm._e(), _vm._v(" "), column.html ? _c('span', {
+        "class": _vm.getClasses(i, 'td'),
+        on: {
+          "click": function click($event) {
+            _vm.columnCollapsable(i) ? _vm.$emit('vgtExpand', !_vm.headerRow.vgtIsExpanded) : function () {};
+          }
+        }
+      }, [_vm.columnCollapsable(i) ? _c('span', {
+        staticClass: "triangle",
+        "class": {
+          'expand': _vm.headerRow.vgtIsExpanded
+        }
+      }) : _vm._e(), _vm._v(" "), _vm._t("table-header-row", [!column.html ? _c('span', [_vm._v("\n        " + _vm._s(_vm.collectFormatted(_vm.headerRow, column, true)) + "\n      ")]) : _vm._e(), _vm._v(" "), column.html ? _c('span', {
         domProps: {
           "innerHTML": _vm._s(_vm.collectFormatted(_vm.headerRow, column, true))
         }
@@ -8714,10 +9034,32 @@
 
   /* style inject SSR */
 
-  var VgtHeaderRow = normalizeComponent_1({
+  /* style inject shadow dom */
+
+  var __vue_component__$5 = /*#__PURE__*/normalizeComponent({
     render: __vue_render__$5,
     staticRenderFns: __vue_staticRenderFns__$5
-  }, __vue_inject_styles__$5, __vue_script__$5, __vue_scope_id__$5, __vue_is_functional_template__$5, __vue_module_identifier__$5, undefined, undefined);
+  }, __vue_inject_styles__$5, __vue_script__$5, __vue_scope_id__$5, __vue_is_functional_template__$5, __vue_module_identifier__$5, false, undefined, undefined, undefined);
+
+  function toInteger(dirtyNumber) {
+    if (dirtyNumber === null || dirtyNumber === true || dirtyNumber === false) {
+      return NaN;
+    }
+
+    var number = Number(dirtyNumber);
+
+    if (isNaN(number)) {
+      return number;
+    }
+
+    return number < 0 ? Math.ceil(number) : Math.floor(number);
+  }
+
+  function requiredArgs(required, args) {
+    if (args.length < required) {
+      throw new TypeError(required + ' argument' + (required > 1 ? 's' : '') + ' required, but only ' + args.length + ' present');
+    }
+  }
 
   /**
    * @name toDate
@@ -8749,11 +9091,9 @@
    * const result = toDate(1392098430000)
    * //=> Tue Feb 11 2014 11:30:30
    */
-  function toDate(argument) {
-    if (arguments.length < 1) {
-      throw new TypeError('1 argument required, but only ' + arguments.length + ' present');
-    }
 
+  function toDate(argument) {
+    requiredArgs(1, arguments);
     var argStr = Object.prototype.toString.call(argument); // Clone the date
 
     if (argument instanceof Date || typeof argument === 'object' && argStr === '[object Date]') {
@@ -8764,27 +9104,13 @@
     } else {
       if ((typeof argument === 'string' || argStr === '[object String]') && typeof console !== 'undefined') {
         // eslint-disable-next-line no-console
-        console.warn("Starting with v2.0.0-beta.1 date-fns doesn't accept strings as arguments. Please use `parseISO` to parse strings. See: https://git.io/fjule"); // eslint-disable-next-line no-console
+        console.warn("Starting with v2.0.0-beta.1 date-fns doesn't accept strings as date arguments. Please use `parseISO` to parse strings. See: https://git.io/fjule"); // eslint-disable-next-line no-console
 
         console.warn(new Error().stack);
       }
 
       return new Date(NaN);
     }
-  }
-
-  function toInteger(dirtyNumber) {
-    if (dirtyNumber === null || dirtyNumber === true || dirtyNumber === false) {
-      return NaN;
-    }
-
-    var number = Number(dirtyNumber);
-
-    if (isNaN(number)) {
-      return number;
-    }
-
-    return number < 0 ? Math.ceil(number) : Math.floor(number);
   }
 
   /**
@@ -8800,7 +9126,7 @@
    * - [Changes that are common for the whole library](https://github.com/date-fns/date-fns/blob/master/docs/upgradeGuide.md#Common-Changes).
    *
    * @param {Date|Number} date - the date to be changed
-   * @param {Number} amount - the amount of milliseconds to be added
+   * @param {Number} amount - the amount of milliseconds to be added. Positive decimals will be rounded using `Math.floor`, decimals less than zero will be rounded using `Math.ceil`.
    * @returns {Date} the new date with the milliseconds added
    * @throws {TypeError} 2 arguments required
    *
@@ -8811,16 +9137,17 @@
    */
 
   function addMilliseconds(dirtyDate, dirtyAmount) {
-    if (arguments.length < 2) {
-      throw new TypeError('2 arguments required, but only ' + arguments.length + ' present');
-    }
-
+    requiredArgs(2, arguments);
     var timestamp = toDate(dirtyDate).getTime();
     var amount = toInteger(dirtyAmount);
     return new Date(timestamp + amount);
   }
 
   var MILLISECONDS_IN_MINUTE = 60000;
+
+  function getDateMillisecondsPart(date) {
+    return date.getTime() % MILLISECONDS_IN_MINUTE;
+  }
   /**
    * Google Chrome as of 67.0.3396.87 introduced timezones with offset that includes seconds.
    * They usually appear for dates that denote time before the timezones were introduced
@@ -8833,11 +9160,13 @@
    * This function returns the timezone offset in milliseconds that takes seconds in account.
    */
 
+
   function getTimezoneOffsetInMilliseconds(dirtyDate) {
     var date = new Date(dirtyDate.getTime());
-    var baseTimezoneOffset = date.getTimezoneOffset();
+    var baseTimezoneOffset = Math.ceil(date.getTimezoneOffset());
     date.setSeconds(0, 0);
-    var millisecondsPartOfTimezoneOffset = date.getTime() % MILLISECONDS_IN_MINUTE;
+    var hasNegativeUTCOffset = baseTimezoneOffset > 0;
+    var millisecondsPartOfTimezoneOffset = hasNegativeUTCOffset ? (MILLISECONDS_IN_MINUTE + getDateMillisecondsPart(date)) % MILLISECONDS_IN_MINUTE : getDateMillisecondsPart(date);
     return baseTimezoneOffset * MILLISECONDS_IN_MINUTE + millisecondsPartOfTimezoneOffset;
   }
 
@@ -8879,10 +9208,7 @@
    */
 
   function compareAsc(dirtyDateLeft, dirtyDateRight) {
-    if (arguments.length < 2) {
-      throw new TypeError('2 arguments required, but only ' + arguments.length + ' present');
-    }
-
+    requiredArgs(2, arguments);
     var dateLeft = toDate(dirtyDateLeft);
     var dateRight = toDate(dirtyDateRight);
     var diff = dateLeft.getTime() - dateRight.getTime();
@@ -8925,7 +9251,7 @@
    *   | `new Date('')`            | `false`       | `false`       |
    *   | `new Date(1488370835081)` | `true`        | `true`        |
    *   | `new Date(NaN)`           | `false`       | `false`       |
-   *   | `'2016-01-01'`            | `TypeError`   | `true`        |
+   *   | `'2016-01-01'`            | `TypeError`   | `false`       |
    *   | `''`                      | `TypeError`   | `false`       |
    *   | `1488370835081`           | `TypeError`   | `true`        |
    *   | `NaN`                     | `TypeError`   | `false`       |
@@ -8955,10 +9281,7 @@
    */
 
   function isValid(dirtyDate) {
-    if (arguments.length < 1) {
-      throw new TypeError('1 argument required, but only ' + arguments.length + ' present');
-    }
-
+    requiredArgs(1, arguments);
     var date = toDate(dirtyDate);
     return !isNaN(date);
   }
@@ -8992,6 +9315,14 @@
     xDays: {
       one: '1 day',
       other: '{{count}} days'
+    },
+    aboutXWeeks: {
+      one: 'about 1 week',
+      other: 'about {{count}} weeks'
+    },
+    xWeeks: {
+      one: '1 week',
+      other: '{{count}} weeks'
     },
     aboutXMonths: {
       one: 'about 1 month',
@@ -9309,12 +9640,12 @@
       var value;
 
       if (Object.prototype.toString.call(parsePatterns) === '[object Array]') {
-        value = parsePatterns.findIndex(function (pattern) {
-          return pattern.test(string);
+        value = findIndex(parsePatterns, function (pattern) {
+          return pattern.test(matchedString);
         });
       } else {
         value = findKey(parsePatterns, function (pattern) {
-          return pattern.test(string);
+          return pattern.test(matchedString);
         });
       }
 
@@ -9330,6 +9661,14 @@
   function findKey(object, predicate) {
     for (var key in object) {
       if (object.hasOwnProperty(key) && predicate(object[key])) {
+        return key;
+      }
+    }
+  }
+
+  function findIndex(array, predicate) {
+    for (var key = 0; key < array.length; key++) {
+      if (predicate(array[key])) {
         return key;
       }
     }
@@ -9442,6 +9781,7 @@
    */
 
   var locale = {
+    code: 'en-US',
     formatDistance: formatDistance,
     formatLong: formatLong,
     formatRelative: formatRelative,
@@ -9468,7 +9808,7 @@
    * - [Changes that are common for the whole library](https://github.com/date-fns/date-fns/blob/master/docs/upgradeGuide.md#Common-Changes).
    *
    * @param {Date|Number} date - the date to be changed
-   * @param {Number} amount - the amount of milliseconds to be subtracted
+   * @param {Number} amount - the amount of milliseconds to be subtracted. Positive decimals will be rounded using `Math.floor`, decimals less than zero will be rounded using `Math.ceil`.
    * @returns {Date} the new date with the milliseconds subtracted
    * @throws {TypeError} 2 arguments required
    *
@@ -9479,10 +9819,7 @@
    */
 
   function subMilliseconds(dirtyDate, dirtyAmount) {
-    if (arguments.length < 2) {
-      throw new TypeError('2 arguments required, but only ' + arguments.length + ' present');
-    }
-
+    requiredArgs(2, arguments);
     var amount = toInteger(dirtyAmount);
     return addMilliseconds(dirtyDate, -amount);
   }
@@ -9583,10 +9920,7 @@
   // See issue: https://github.com/date-fns/date-fns/issues/376
 
   function getUTCDayOfYear(dirtyDate) {
-    if (arguments.length < 1) {
-      throw new TypeError('1 argument required, but only ' + arguments.length + ' present');
-    }
-
+    requiredArgs(1, arguments);
     var date = toDate(dirtyDate);
     var timestamp = date.getTime();
     date.setUTCMonth(0, 1);
@@ -9599,10 +9933,7 @@
   // See issue: https://github.com/date-fns/date-fns/issues/376
 
   function startOfUTCISOWeek(dirtyDate) {
-    if (arguments.length < 1) {
-      throw new TypeError('1 argument required, but only ' + arguments.length + ' present');
-    }
-
+    requiredArgs(1, arguments);
     var weekStartsOn = 1;
     var date = toDate(dirtyDate);
     var day = date.getUTCDay();
@@ -9615,10 +9946,7 @@
   // See issue: https://github.com/date-fns/date-fns/issues/376
 
   function getUTCISOWeekYear(dirtyDate) {
-    if (arguments.length < 1) {
-      throw new TypeError('1 argument required, but only ' + arguments.length + ' present');
-    }
-
+    requiredArgs(1, arguments);
     var date = toDate(dirtyDate);
     var year = date.getUTCFullYear();
     var fourthOfJanuaryOfNextYear = new Date(0);
@@ -9642,10 +9970,7 @@
   // See issue: https://github.com/date-fns/date-fns/issues/376
 
   function startOfUTCISOWeekYear(dirtyDate) {
-    if (arguments.length < 1) {
-      throw new TypeError('1 argument required, but only ' + arguments.length + ' present');
-    }
-
+    requiredArgs(1, arguments);
     var year = getUTCISOWeekYear(dirtyDate);
     var fourthOfJanuary = new Date(0);
     fourthOfJanuary.setUTCFullYear(year, 0, 4);
@@ -9658,10 +9983,7 @@
   // See issue: https://github.com/date-fns/date-fns/issues/376
 
   function getUTCISOWeek(dirtyDate) {
-    if (arguments.length < 1) {
-      throw new TypeError('1 argument required, but only ' + arguments.length + ' present');
-    }
-
+    requiredArgs(1, arguments);
     var date = toDate(dirtyDate);
     var diff = startOfUTCISOWeek(date).getTime() - startOfUTCISOWeekYear(date).getTime(); // Round the number of days to the nearest integer
     // because the number of milliseconds in a week is not constant
@@ -9673,10 +9995,7 @@
   // See issue: https://github.com/date-fns/date-fns/issues/376
 
   function startOfUTCWeek(dirtyDate, dirtyOptions) {
-    if (arguments.length < 1) {
-      throw new TypeError('1 argument required, but only ' + arguments.length + ' present');
-    }
-
+    requiredArgs(1, arguments);
     var options = dirtyOptions || {};
     var locale = options.locale;
     var localeWeekStartsOn = locale && locale.options && locale.options.weekStartsOn;
@@ -9698,10 +10017,7 @@
   // See issue: https://github.com/date-fns/date-fns/issues/376
 
   function getUTCWeekYear(dirtyDate, dirtyOptions) {
-    if (arguments.length < 1) {
-      throw new TypeError('1 argument required, but only ' + arguments.length + ' present');
-    }
-
+    requiredArgs(1, arguments);
     var date = toDate(dirtyDate, dirtyOptions);
     var year = date.getUTCFullYear();
     var options = dirtyOptions || {};
@@ -9735,10 +10051,7 @@
   // See issue: https://github.com/date-fns/date-fns/issues/376
 
   function startOfUTCWeekYear(dirtyDate, dirtyOptions) {
-    if (arguments.length < 1) {
-      throw new TypeError('1 argument required, but only ' + arguments.length + ' present');
-    }
-
+    requiredArgs(1, arguments);
     var options = dirtyOptions || {};
     var locale = options.locale;
     var localeFirstWeekContainsDate = locale && locale.options && locale.options.firstWeekContainsDate;
@@ -9756,10 +10069,7 @@
   // See issue: https://github.com/date-fns/date-fns/issues/376
 
   function getUTCWeek(dirtyDate, options) {
-    if (arguments.length < 1) {
-      throw new TypeError('1 argument required, but only ' + arguments.length + ' present');
-    }
-
+    requiredArgs(1, arguments);
     var date = toDate(dirtyDate);
     var diff = startOfUTCWeek(date, options).getTime() - startOfUTCWeekYear(date, options).getTime(); // Round the number of days to the nearest integer
     // because the number of milliseconds in a week is not constant
@@ -10720,15 +11030,15 @@
   function isProtectedWeekYearToken(token) {
     return protectedWeekYearTokens.indexOf(token) !== -1;
   }
-  function throwProtectedError(token) {
+  function throwProtectedError(token, format, input) {
     if (token === 'YYYY') {
-      throw new RangeError('Use `yyyy` instead of `YYYY` for formatting years; see: https://git.io/fxCyr');
+      throw new RangeError("Use `yyyy` instead of `YYYY` (in `".concat(format, "`) for formatting years to the input `").concat(input, "`; see: https://git.io/fxCyr"));
     } else if (token === 'YY') {
-      throw new RangeError('Use `yy` instead of `YY` for formatting years; see: https://git.io/fxCyr');
+      throw new RangeError("Use `yy` instead of `YY` (in `".concat(format, "`) for formatting years to the input `").concat(input, "`; see: https://git.io/fxCyr"));
     } else if (token === 'D') {
-      throw new RangeError('Use `d` instead of `D` for formatting days of the month; see: https://git.io/fxCyr');
+      throw new RangeError("Use `d` instead of `D` (in `".concat(format, "`) for formatting days of the month to the input `").concat(input, "`; see: https://git.io/fxCyr"));
     } else if (token === 'DD') {
-      throw new RangeError('Use `dd` instead of `DD` for formatting days of the month; see: https://git.io/fxCyr');
+      throw new RangeError("Use `dd` instead of `DD` (in `".concat(format, "`) for formatting days of the month to the input `").concat(input, "`; see: https://git.io/fxCyr"));
     }
   }
 
@@ -10747,7 +11057,7 @@
   // sequences of symbols P, p, and the combinations like `PPPPPPPppppp`
 
   var longFormattingTokensRegExp = /P+p+|P+|p+|''|'(''|[^'])+('|$)|./g;
-  var escapedStringRegExp = /^'(.*?)'?$/;
+  var escapedStringRegExp = /^'([^]*?)'?$/;
   var doubleQuoteRegExp = /''/g;
   var unescapedLatinCharacterRegExp = /[a-zA-Z]/;
   /**
@@ -10835,28 +11145,28 @@
    * |                                 | DD      | 01, 02, ..., 365, 366             | 9     |
    * |                                 | DDD     | 001, 002, ..., 365, 366           |       |
    * |                                 | DDDD    | ...                               | 3     |
-   * | Day of week (formatting)        | E..EEE  | Mon, Tue, Wed, ..., Su            |       |
+   * | Day of week (formatting)        | E..EEE  | Mon, Tue, Wed, ..., Sun           |       |
    * |                                 | EEEE    | Monday, Tuesday, ..., Sunday      | 2     |
    * |                                 | EEEEE   | M, T, W, T, F, S, S               |       |
    * |                                 | EEEEEE  | Mo, Tu, We, Th, Fr, Su, Sa        |       |
    * | ISO day of week (formatting)    | i       | 1, 2, 3, ..., 7                   | 7     |
    * |                                 | io      | 1st, 2nd, ..., 7th                | 7     |
    * |                                 | ii      | 01, 02, ..., 07                   | 7     |
-   * |                                 | iii     | Mon, Tue, Wed, ..., Su            | 7     |
+   * |                                 | iii     | Mon, Tue, Wed, ..., Sun           | 7     |
    * |                                 | iiii    | Monday, Tuesday, ..., Sunday      | 2,7   |
    * |                                 | iiiii   | M, T, W, T, F, S, S               | 7     |
    * |                                 | iiiiii  | Mo, Tu, We, Th, Fr, Su, Sa        | 7     |
    * | Local day of week (formatting)  | e       | 2, 3, 4, ..., 1                   |       |
    * |                                 | eo      | 2nd, 3rd, ..., 1st                | 7     |
    * |                                 | ee      | 02, 03, ..., 01                   |       |
-   * |                                 | eee     | Mon, Tue, Wed, ..., Su            |       |
+   * |                                 | eee     | Mon, Tue, Wed, ..., Sun           |       |
    * |                                 | eeee    | Monday, Tuesday, ..., Sunday      | 2     |
    * |                                 | eeeee   | M, T, W, T, F, S, S               |       |
    * |                                 | eeeeee  | Mo, Tu, We, Th, Fr, Su, Sa        |       |
    * | Local day of week (stand-alone) | c       | 2, 3, 4, ..., 1                   |       |
    * |                                 | co      | 2nd, 3rd, ..., 1st                | 7     |
    * |                                 | cc      | 02, 03, ..., 01                   |       |
-   * |                                 | ccc     | Mon, Tue, Wed, ..., Su            |       |
+   * |                                 | ccc     | Mon, Tue, Wed, ..., Sun           |       |
    * |                                 | cccc    | Monday, Tuesday, ..., Sunday      | 2     |
    * |                                 | ccccc   | M, T, W, T, F, S, S               |       |
    * |                                 | cccccc  | Mo, Tu, We, Th, Fr, Su, Sa        |       |
@@ -10877,7 +11187,7 @@
    * |                                 | HH      | 00, 01, 02, ..., 23               |       |
    * | Hour [0-11]                     | K       | 1, 2, ..., 11, 0                  |       |
    * |                                 | Ko      | 1st, 2nd, ..., 11th, 0th          | 7     |
-   * |                                 | KK      | 1, 2, ..., 11, 0                  |       |
+   * |                                 | KK      | 01, 02, ..., 11, 00               |       |
    * | Hour [1-24]                     | k       | 24, 1, 2, ..., 23                 |       |
    * |                                 | ko      | 24th, 1st, 2nd, ..., 23rd         | 7     |
    * |                                 | kk      | 24, 01, 02, ..., 23               |       |
@@ -11030,14 +11340,15 @@
    *   see: https://git.io/fxCyr
    * @returns {String} the formatted date string
    * @throws {TypeError} 2 arguments required
+   * @throws {RangeError} `date` must not be Invalid Date
    * @throws {RangeError} `options.locale` must contain `localize` property
    * @throws {RangeError} `options.locale` must contain `formatLong` property
    * @throws {RangeError} `options.weekStartsOn` must be between 0 and 6
    * @throws {RangeError} `options.firstWeekContainsDate` must be between 1 and 7
-   * @throws {RangeError} use `yyyy` instead of `YYYY` for formatting years; see: https://git.io/fxCyr
-   * @throws {RangeError} use `yy` instead of `YY` for formatting years; see: https://git.io/fxCyr
-   * @throws {RangeError} use `d` instead of `D` for formatting days of the month; see: https://git.io/fxCyr
-   * @throws {RangeError} use `dd` instead of `DD` for formatting days of the month; see: https://git.io/fxCyr
+   * @throws {RangeError} use `yyyy` instead of `YYYY` for formatting years using [format provided] to the input [input provided]; see: https://git.io/fxCyr
+   * @throws {RangeError} use `yy` instead of `YY` for formatting years using [format provided] to the input [input provided]; see: https://git.io/fxCyr
+   * @throws {RangeError} use `d` instead of `D` for formatting days of the month using [format provided] to the input [input provided]; see: https://git.io/fxCyr
+   * @throws {RangeError} use `dd` instead of `DD` for formatting days of the month using [format provided] to the input [input provided]; see: https://git.io/fxCyr
    * @throws {RangeError} format string contains an unescaped latin alphabet character
    *
    * @example
@@ -11060,10 +11371,7 @@
    */
 
   function format(dirtyDate, dirtyFormatStr, dirtyOptions) {
-    if (arguments.length < 2) {
-      throw new TypeError('2 arguments required, but only ' + arguments.length + ' present');
-    }
-
+    requiredArgs(2, arguments);
     var formatStr = String(dirtyFormatStr);
     var options = dirtyOptions || {};
     var locale$1 = options.locale || locale;
@@ -11133,11 +11441,11 @@
 
       if (formatter) {
         if (!options.useAdditionalWeekYearTokens && isProtectedWeekYearToken(substring)) {
-          throwProtectedError(substring);
+          throwProtectedError(substring, dirtyFormatStr, dirtyDate);
         }
 
         if (!options.useAdditionalDayOfYearTokens && isProtectedDayOfYearToken(substring)) {
-          throwProtectedError(substring);
+          throwProtectedError(substring, dirtyFormatStr, dirtyDate);
         }
 
         return formatter(utcDate, substring, locale$1.localize, formatterOptions);
@@ -11175,10 +11483,7 @@
   // See issue: https://github.com/date-fns/date-fns/issues/376
 
   function setUTCDay(dirtyDate, dirtyDay, dirtyOptions) {
-    if (arguments.length < 2) {
-      throw new TypeError('2 arguments required, but only ' + arguments.length + ' present');
-    }
-
+    requiredArgs(2, arguments);
     var options = dirtyOptions || {};
     var locale = options.locale;
     var localeWeekStartsOn = locale && locale.options && locale.options.weekStartsOn;
@@ -11202,10 +11507,7 @@
   // See issue: https://github.com/date-fns/date-fns/issues/376
 
   function setUTCISODay(dirtyDate, dirtyDay) {
-    if (arguments.length < 2) {
-      throw new TypeError('2 arguments required, but only ' + arguments.length + ' present');
-    }
-
+    requiredArgs(2, arguments);
     var day = toInteger(dirtyDay);
 
     if (day % 7 === 0) {
@@ -11225,10 +11527,7 @@
   // See issue: https://github.com/date-fns/date-fns/issues/376
 
   function setUTCISOWeek(dirtyDate, dirtyISOWeek) {
-    if (arguments.length < 2) {
-      throw new TypeError('2 arguments required, but only ' + arguments.length + ' present');
-    }
-
+    requiredArgs(2, arguments);
     var date = toDate(dirtyDate);
     var isoWeek = toInteger(dirtyISOWeek);
     var diff = getUTCISOWeek(date) - isoWeek;
@@ -11239,10 +11538,7 @@
   // See issue: https://github.com/date-fns/date-fns/issues/376
 
   function setUTCWeek(dirtyDate, dirtyWeek, options) {
-    if (arguments.length < 2) {
-      throw new TypeError('2 arguments required, but only ' + arguments.length + ' present');
-    }
-
+    requiredArgs(2, arguments);
     var date = toDate(dirtyDate);
     var week = toInteger(dirtyWeek);
     var diff = getUTCWeek(date, options) - week;
@@ -11952,6 +12248,7 @@
     // Day of the month
     d: {
       priority: 90,
+      subPriority: 1,
       parse: function (string, token, match, _options) {
         switch (token) {
           case 'd':
@@ -11987,6 +12284,7 @@
     // Day of year
     D: {
       priority: 90,
+      subPriority: 1,
       parse: function (string, token, match, _options) {
         switch (token) {
           case 'D':
@@ -12760,7 +13058,7 @@
   // sequences of symbols P, p, and the combinations like `PPPPPPPppppp`
 
   var longFormattingTokensRegExp$1 = /P+p+|P+|p+|''|'(''|[^'])+('|$)|./g;
-  var escapedStringRegExp$1 = /^'(.*?)'?$/;
+  var escapedStringRegExp$1 = /^'([^]*?)'?$/;
   var doubleQuoteRegExp$1 = /''/g;
   var notWhitespaceRegExp = /\S/;
   var unescapedLatinCharacterRegExp$1 = /[a-zA-Z]/;
@@ -12858,28 +13156,28 @@
    * |                                 |     | DD      | 01, 02, ..., 365, 366             | 7     |
    * |                                 |     | DDD     | 001, 002, ..., 365, 366           |       |
    * |                                 |     | DDDD    | ...                               | 2     |
-   * | Day of week (formatting)        |  90 | E..EEE  | Mon, Tue, Wed, ..., Su            |       |
+   * | Day of week (formatting)        |  90 | E..EEE  | Mon, Tue, Wed, ..., Sun           |       |
    * |                                 |     | EEEE    | Monday, Tuesday, ..., Sunday      | 2     |
    * |                                 |     | EEEEE   | M, T, W, T, F, S, S               |       |
    * |                                 |     | EEEEEE  | Mo, Tu, We, Th, Fr, Su, Sa        |       |
    * | ISO day of week (formatting)    |  90 | i       | 1, 2, 3, ..., 7                   | 5     |
    * |                                 |     | io      | 1st, 2nd, ..., 7th                | 5     |
    * |                                 |     | ii      | 01, 02, ..., 07                   | 5     |
-   * |                                 |     | iii     | Mon, Tue, Wed, ..., Su            | 5     |
+   * |                                 |     | iii     | Mon, Tue, Wed, ..., Sun           | 5     |
    * |                                 |     | iiii    | Monday, Tuesday, ..., Sunday      | 2,5   |
    * |                                 |     | iiiii   | M, T, W, T, F, S, S               | 5     |
    * |                                 |     | iiiiii  | Mo, Tu, We, Th, Fr, Su, Sa        | 5     |
    * | Local day of week (formatting)  |  90 | e       | 2, 3, 4, ..., 1                   |       |
    * |                                 |     | eo      | 2nd, 3rd, ..., 1st                | 5     |
    * |                                 |     | ee      | 02, 03, ..., 01                   |       |
-   * |                                 |     | eee     | Mon, Tue, Wed, ..., Su            |       |
+   * |                                 |     | eee     | Mon, Tue, Wed, ..., Sun           |       |
    * |                                 |     | eeee    | Monday, Tuesday, ..., Sunday      | 2     |
    * |                                 |     | eeeee   | M, T, W, T, F, S, S               |       |
    * |                                 |     | eeeeee  | Mo, Tu, We, Th, Fr, Su, Sa        |       |
    * | Local day of week (stand-alone) |  90 | c       | 2, 3, 4, ..., 1                   |       |
    * |                                 |     | co      | 2nd, 3rd, ..., 1st                | 5     |
    * |                                 |     | cc      | 02, 03, ..., 01                   |       |
-   * |                                 |     | ccc     | Mon, Tue, Wed, ..., Su            |       |
+   * |                                 |     | ccc     | Mon, Tue, Wed, ..., Sun           |       |
    * |                                 |     | cccc    | Monday, Tuesday, ..., Sunday      | 2     |
    * |                                 |     | ccccc   | M, T, W, T, F, S, S               |       |
    * |                                 |     | cccccc  | Mo, Tu, We, Th, Fr, Su, Sa        |       |
@@ -12900,7 +13198,7 @@
    * |                                 |     | HH      | 00, 01, 02, ..., 23               |       |
    * | Hour [0-11]                     |  70 | K       | 1, 2, ..., 11, 0                  |       |
    * |                                 |     | Ko      | 1st, 2nd, ..., 11th, 0th          | 5     |
-   * |                                 |     | KK      | 1, 2, ..., 11, 0                  |       |
+   * |                                 |     | KK      | 01, 02, ..., 11, 00               |       |
    * | Hour [1-24]                     |  70 | k       | 24, 1, 2, ..., 23                 |       |
    * |                                 |     | ko      | 24th, 1st, 2nd, ..., 23rd         | 5     |
    * |                                 |     | kk      | 24, 01, 02, ..., 23               |       |
@@ -12970,7 +13268,7 @@
    *    | BC 1 |   1 |   0 |
    *    | BC 2 |   2 |  -1 |
    *
-   *    Also `yy` will try to guess the century of two digit year by proximity with `backupDate`:
+   *    Also `yy` will try to guess the century of two digit year by proximity with `referenceDate`:
    *
    *    `parse('50', 'yy', new Date(2018, 0, 1)) //=> Sat Jan 01 2050 00:00:00`
    *
@@ -13013,18 +13311,18 @@
    * Units of an equal priority overwrite each other in the order of appearance.
    *
    * If no values of higher priority are parsed (e.g. when parsing string 'January 1st' without a year),
-   * the values will be taken from 3rd argument `backupDate` which works as a context of parsing.
+   * the values will be taken from 3rd argument `referenceDate` which works as a context of parsing.
    *
-   * `backupDate` must be passed for correct work of the function.
-   * If you're not sure which `backupDate` to supply, create a new instance of Date:
+   * `referenceDate` must be passed for correct work of the function.
+   * If you're not sure which `referenceDate` to supply, create a new instance of Date:
    * `parse('02/11/2014', 'MM/dd/yyyy', new Date())`
    * In this case parsing will be done in the context of the current date.
-   * If `backupDate` is `Invalid Date` or a value not convertible to valid `Date`,
+   * If `referenceDate` is `Invalid Date` or a value not convertible to valid `Date`,
    * then `Invalid Date` will be returned.
    *
    * The result may vary by locale.
    *
-   * If `formatString` matches with `dateString` but does not provides tokens, `backupDate` will be returned.
+   * If `formatString` matches with `dateString` but does not provides tokens, `referenceDate` will be returned.
    *
    * If parsing failed, `Invalid Date` will be returned.
    * Invalid Date is a Date, whose time value is NaN.
@@ -13048,7 +13346,7 @@
    *
    * @param {String} dateString - the string to parse
    * @param {String} formatString - the string of tokens
-   * @param {Date|Number} backupDate - defines values missing from the parsed dateString
+   * @param {Date|Number} referenceDate - defines values missing from the parsed dateString
    * @param {Object} [options] - an object with options.
    * @param {Locale} [options.locale=defaultLocale] - the locale object. See [Locale]{@link https://date-fns.org/docs/Locale}
    * @param {0|1|2|3|4|5|6} [options.weekStartsOn=0] - the index of the first day of the week (0 - Sunday)
@@ -13062,10 +13360,10 @@
    * @throws {RangeError} `options.weekStartsOn` must be between 0 and 6
    * @throws {RangeError} `options.firstWeekContainsDate` must be between 1 and 7
    * @throws {RangeError} `options.locale` must contain `match` property
-   * @throws {RangeError} use `yyyy` instead of `YYYY` for formatting years; see: https://git.io/fxCyr
-   * @throws {RangeError} use `yy` instead of `YY` for formatting years; see: https://git.io/fxCyr
-   * @throws {RangeError} use `d` instead of `D` for formatting days of the month; see: https://git.io/fxCyr
-   * @throws {RangeError} use `dd` instead of `DD` for formatting days of the month; see: https://git.io/fxCyr
+   * @throws {RangeError} use `yyyy` instead of `YYYY` for formatting years using [format provided] to the input [input provided]; see: https://git.io/fxCyr
+   * @throws {RangeError} use `yy` instead of `YY` for formatting years using [format provided] to the input [input provided]; see: https://git.io/fxCyr
+   * @throws {RangeError} use `d` instead of `D` for formatting days of the month using [format provided] to the input [input provided]; see: https://git.io/fxCyr
+   * @throws {RangeError} use `dd` instead of `DD` for formatting days of the month using [format provided] to the input [input provided]; see: https://git.io/fxCyr
    * @throws {RangeError} format string contains an unescaped latin alphabet character
    *
    * @example
@@ -13082,11 +13380,8 @@
    * //=> Sun Feb 28 2010 00:00:00
    */
 
-  function parse(dirtyDateString, dirtyFormatString, dirtyBackupDate, dirtyOptions) {
-    if (arguments.length < 3) {
-      throw new TypeError('3 arguments required, but only ' + arguments.length + ' present');
-    }
-
+  function parse(dirtyDateString, dirtyFormatString, dirtyReferenceDate, dirtyOptions) {
+    requiredArgs(3, arguments);
     var dateString = String(dirtyDateString);
     var formatString = String(dirtyFormatString);
     var options = dirtyOptions || {};
@@ -13114,7 +13409,7 @@
 
     if (formatString === '') {
       if (dateString === '') {
-        return toDate(dirtyBackupDate);
+        return toDate(dirtyReferenceDate);
       } else {
         return new Date(NaN);
       }
@@ -13128,6 +13423,7 @@
     };
     var setters = [{
       priority: TIMEZONE_UNIT_PRIORITY,
+      subPriority: -1,
       set: dateToSystemTimezone,
       index: 0
     }];
@@ -13148,11 +13444,11 @@
       var token = tokens[i];
 
       if (!options.useAdditionalWeekYearTokens && isProtectedWeekYearToken(token)) {
-        throwProtectedError(token);
+        throwProtectedError(token, formatString, dirtyDateString);
       }
 
       if (!options.useAdditionalDayOfYearTokens && isProtectedDayOfYearToken(token)) {
-        throwProtectedError(token);
+        throwProtectedError(token, formatString, dirtyDateString);
       }
 
       var firstCharacter = token[0];
@@ -13192,6 +13488,7 @@
 
         setters.push({
           priority: parser.priority,
+          subPriority: parser.subPriority || 0,
           set: parser.set,
           validate: parser.validate,
           value: parseResult.value,
@@ -13233,11 +13530,13 @@
     }).map(function (priority) {
       return setters.filter(function (setter) {
         return setter.priority === priority;
-      }).reverse();
+      }).sort(function (a, b) {
+        return b.subPriority - a.subPriority;
+      });
     }).map(function (setterArray) {
       return setterArray[0];
     });
-    var date = toDate(dirtyBackupDate);
+    var date = toDate(dirtyReferenceDate);
 
     if (isNaN(date)) {
       return new Date(NaN);
@@ -13324,6 +13623,7 @@
   };
 
   var date$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
     'default': date
   });
 
@@ -13350,6 +13650,7 @@
   };
 
   var number$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
     'default': number
   });
 
@@ -13361,6 +13662,7 @@
   };
 
   var decimal$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
     'default': decimal
   });
 
@@ -13372,6 +13674,7 @@
   };
 
   var percentage$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
     'default': percentage
   });
 
@@ -13398,6 +13701,7 @@
   };
 
   var _boolean$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
     'default': _boolean
   });
 
@@ -13426,10 +13730,7 @@
         "default": null,
         type: String
       },
-      fixedHeader: {
-        "default": false,
-        type: Boolean
-      },
+      fixedHeader: Boolean,
       theme: {
         "default": ''
       },
@@ -13444,23 +13745,23 @@
       },
       columns: {},
       rows: {},
-      lineNumbers: {
-        "default": false
-      },
+      lineNumbers: Boolean,
       responsive: {
-        "default": true
+        "default": true,
+        type: Boolean
       },
-      rtl: {
-        "default": false
-      },
+      rtl: Boolean,
       rowStyleClass: {
         "default": null,
         type: [Function, String]
       },
+      compactMode: Boolean,
       groupOptions: {
         "default": function _default() {
           return {
-            enabled: false
+            enabled: false,
+            collapsable: false,
+            rowKey: null
           };
         }
       },
@@ -13471,7 +13772,8 @@
             selectionInfoClass: '',
             selectionText: 'rows selected',
             clearSelectionText: 'clear',
-            disableSelectInfo: false
+            disableSelectInfo: false,
+            selectAllByGroup: false
           };
         }
       },
@@ -13491,6 +13793,7 @@
             enabled: false,
             perPage: 10,
             perPageDropdown: null,
+            perPageDropdownEnabled: true,
             position: 'bottom',
             dropdownAllowAll: true,
             mode: 'records' // or pages
@@ -13526,7 +13829,7 @@
         tableLoading: false,
         // text options
         nextText: 'Next',
-        prevText: 'Prev',
+        prevText: 'Previous',
         rowsPerPageText: 'Rows per page',
         ofText: 'of',
         allText: 'All',
@@ -13539,6 +13842,9 @@
         selectionInfoClass: '',
         selectionText: 'rows selected',
         clearSelectionText: 'clear',
+        // keys for rows that are currently expanded
+        maintainExpanded: true,
+        expandedRowKeys: new Set(),
         // internal sort options
         sortable: true,
         defaultSortBy: null,
@@ -13586,7 +13892,9 @@
       },
       paginationOptions: {
         handler: function handler(newValue, oldValue) {
-          this.initializePagination();
+          if (!lodash_isequal(newValue, oldValue)) {
+            this.initializePagination();
+          }
         },
         deep: true,
         immediate: true
@@ -13606,8 +13914,9 @@
       },
       sortOptions: {
         handler: function handler(newValue, oldValue) {
-          // if (!isEqual(newValue, oldValue)) {
-          this.initializeSort(); // }
+          if (!lodash_isequal(newValue, oldValue)) {
+            this.initializeSort();
+          }
         },
         deep: true
       },
@@ -13639,6 +13948,9 @@
       hasExpandedSlot: function hasExpandedSlot() {
         return !!this.$scopedSlots['expanded-row'];
       },
+      tableStyles: function tableStyles() {
+        if (this.compactMode) return this.tableStyleClasses + 'vgt-compact';else return this.tableStyleClasses;
+      },
       hasFooterSlot: function hasFooterSlot() {
         return !!this.$slots['table-actions-bottom'];
       },
@@ -13647,6 +13959,9 @@
           overflow: 'scroll-y',
           maxHeight: this.maxHeight ? this.maxHeight : 'auto'
         };
+      },
+      rowKeyField: function rowKeyField() {
+        return this.groupOptions.rowKey || 'vgt_header_id';
       },
       hasHeaderRowTemplate: function hasHeaderRowTemplate() {
         return !!this.$slots['table-header-row'] || !!this.$scopedSlots['table-header-row'];
@@ -13880,17 +14195,23 @@
         return computedRows;
       },
       paginated: function paginated() {
+        var _this3 = this;
+
         if (!this.processedRows.length) return [];
 
         if (this.mode === 'remote') {
           return this.processedRows;
-        } // for every group, extract the child rows
-        // to cater to paging
+        } //* flatten the rows for paging.
 
 
         var paginatedRows = [];
         lodash_foreach(this.processedRows, function (childRows) {
           var _paginatedRows;
+
+          //* only add headers when group options are enabled.
+          if (_this3.groupOptions.enabled) {
+            paginatedRows.push(childRows);
+          }
 
           (_paginatedRows = paginatedRows).push.apply(_paginatedRows, _toConsumableArray(childRows.children));
         });
@@ -13917,14 +14238,33 @@
 
 
         var reconstructedRows = [];
-        lodash_foreach(this.processedRows, function (headerRow) {
-          var i = headerRow.vgt_header_id;
-          var children = lodash_filter(paginatedRows, ['vgt_id', i]);
+        paginatedRows.forEach(function (flatRow) {
+          //* header row?
+          if (flatRow.vgt_header_id !== undefined) {
+            _this3.handleExpanded(flatRow);
 
-          if (children.length) {
-            var newHeaderRow = lodash_clonedeep(headerRow);
-            newHeaderRow.children = children;
+            var newHeaderRow = lodash_clonedeep(flatRow);
+            newHeaderRow.children = [];
             reconstructedRows.push(newHeaderRow);
+          } else {
+            //* child row
+            var hRow = reconstructedRows.find(function (r) {
+              return r.vgt_header_id === flatRow.vgt_id;
+            });
+
+            if (!hRow) {
+              hRow = _this3.processedRows.find(function (r) {
+                return r.vgt_header_id === flatRow.vgt_id;
+              });
+
+              if (hRow) {
+                hRow = lodash_clonedeep(hRow);
+                hRow.children = [];
+                reconstructedRows.push(hRow);
+              }
+            }
+
+            hRow.children.push(flatRow);
           }
         });
         return reconstructedRows;
@@ -13967,6 +14307,52 @@
       }
     },
     methods: {
+      //* we need to check for expanded row state here
+      //* to maintain it when sorting/filtering
+      handleExpanded: function handleExpanded(headerRow) {
+        if (this.maintainExpanded && this.expandedRowKeys.has(headerRow[this.rowKeyField])) {
+          this.$set(headerRow, 'vgtIsExpanded', true);
+        } else {
+          this.$set(headerRow, 'vgtIsExpanded', false);
+        }
+      },
+      toggleExpand: function toggleExpand(id) {
+        var _this4 = this;
+
+        var headerRow = this.filteredRows.find(function (r) {
+          return r[_this4.rowKeyField] === id;
+        });
+
+        if (headerRow) {
+          this.$set(headerRow, 'vgtIsExpanded', !headerRow.vgtIsExpanded);
+        }
+
+        if (this.maintainExpanded && headerRow.vgtIsExpanded) {
+          this.expandedRowKeys.add(headerRow[this.rowKeyField]);
+        } else {
+          this.expandedRowKeys["delete"](headerRow[this.rowKeyField]);
+        }
+      },
+      expandAll: function expandAll() {
+        var _this5 = this;
+
+        this.filteredRows.forEach(function (row) {
+          _this5.$set(row, 'vgtIsExpanded', true);
+
+          if (_this5.maintainExpanded) {
+            _this5.expandedRowKeys.add(row[_this5.rowKeyField]);
+          }
+        });
+      },
+      collapseAll: function collapseAll() {
+        var _this6 = this;
+
+        this.filteredRows.forEach(function (row) {
+          _this6.$set(row, 'vgtIsExpanded', false);
+
+          _this6.expandedRowKeys.clear();
+        });
+      },
       getColumnForField: function getColumnForField(field) {
         for (var i = 0; i < this.typedColumns.length; i += 1) {
           if (this.typedColumns[i].field === field) return this.typedColumns[i];
@@ -13997,18 +14383,18 @@
         });
       },
       unselectAllInternal: function unselectAllInternal(forceAll) {
-        var _this3 = this;
+        var _this7 = this;
 
         var rows = this.selectAllByPage && !forceAll ? this.paginated : this.filteredRows;
         lodash_foreach(rows, function (headerRow, i) {
           lodash_foreach(headerRow.children, function (row, j) {
-            _this3.$set(row, 'vgtSelected', false);
+            _this7.$set(row, 'vgtSelected', false);
           });
         });
         this.emitSelectedRows();
       },
       toggleSelectAll: function toggleSelectAll() {
-        var _this4 = this;
+        var _this8 = this;
 
         if (this.allSelected) {
           this.unselectAllInternal();
@@ -14018,25 +14404,38 @@
         var rows = this.selectAllByPage ? this.paginated : this.filteredRows;
         lodash_foreach(rows, function (headerRow) {
           lodash_foreach(headerRow.children, function (row) {
-            _this4.$set(row, 'vgtSelected', true);
+            _this8.$set(row, 'vgtSelected', true);
           });
         });
         this.emitSelectedRows();
       },
+      toggleSelectGroup: function toggleSelectGroup(event, headerRow) {
+        var _this9 = this;
+
+        lodash_foreach(headerRow.children, function (row) {
+          _this9.$set(row, 'vgtSelected', event.checked);
+        });
+      },
       changePage: function changePage(value) {
-        if (this.paginationOptions.enabled) {
-          var paginationWidget = this.$refs.paginationBottom;
+        var _this$paginationOptio = this.paginationOptions,
+            enabled = _this$paginationOptio.enabled,
+            position = _this$paginationOptio.position;
+        var _this$$refs = this.$refs,
+            paginationBottom = _this$$refs.paginationBottom,
+            paginationTop = _this$$refs.paginationTop;
 
-          if (this.paginationOptions.position === 'top') {
-            paginationWidget = this.$refs.paginationTop;
+        if (enabled) {
+          if ((position === 'top' || position === 'both') && paginationTop) {
+            paginationTop.currentPage = value;
           }
 
-          if (paginationWidget) {
-            paginationWidget.currentPage = value; // we also need to set the currentPage
-            // for table.
+          if ((position === 'bottom' || position === 'both') && paginationBottom) {
+            paginationBottom.currentPage = value;
+          } // we also need to set the currentPage
+          // for table.
 
-            this.currentPage = value;
-          }
+
+          this.currentPage = value;
         }
       },
       pageChangedEvent: function pageChangedEvent() {
@@ -14057,7 +14456,19 @@
         }
       },
       perPageChanged: function perPageChanged(pagination) {
-        this.currentPerPage = pagination.currentPerPage; //* update perPage also
+        this.currentPerPage = pagination.currentPerPage; // ensure that both sides of pagination are in agreement
+        // this fixes changes during position = 'both'
+
+        var paginationPosition = this.paginationOptions.position;
+
+        if (this.$refs.paginationTop && (paginationPosition === 'top' || paginationPosition === 'both')) {
+          this.$refs.paginationTop.currentPerPage = this.currentPerPage;
+        }
+
+        if (this.$refs.paginationBottom && (paginationPosition === 'bottom' || paginationPosition === 'both')) {
+          this.$refs.paginationBottom.currentPerPage = this.currentPerPage;
+        } //* update perPage also
+
 
         var perPageChangedEvent = this.pageChangedEvent();
         this.$emit('on-per-page-change', perPageChangedEvent);
@@ -14159,7 +14570,7 @@
         this.changePage(1);
       },
       // field can be:
-      // 1. function
+      // 1. function (passed as a string using function.name. For example: 'bound myFunction')
       // 2. regular property - ex: 'prop'
       // 3. nested property path - ex: 'nested.prop'
       collect: function collect(obj, field) {
@@ -14197,7 +14608,7 @@
         // use that here
 
         if (column.formatFn && typeof column.formatFn === 'function') {
-          return column.formatFn(value);
+          return column.formatFn(value, obj);
         } // lets format the resultant data
 
 
@@ -14209,7 +14620,10 @@
           type = this.dataTypes[column.type] || defaultType;
         }
 
-        return type.format(value, column);
+        var result = type.format(value, column); // we must have some values in compact mode
+
+        if (this.compactMode && (result == '' || result == null)) return '-';
+        return result;
       },
       formattedRow: function formattedRow(row) {
         var isHeaderRow = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
@@ -14225,12 +14639,6 @@
 
         return formattedRow;
       },
-      // Check if a column is sortable.
-      isSortableColumn: function isSortableColumn(index) {
-        var sortable = this.columns[index].sortable;
-        var isSortable = typeof sortable === 'boolean' ? sortable : this.sortable;
-        return isSortable;
-      },
       // Get classes for the given column index & element.
       getClasses: function getClasses(index, element, row) {
         var _this$typedColumns$in = this.typedColumns[index],
@@ -14241,10 +14649,9 @@
         if (this.rtl) isRight = true;
         var classes = {
           'vgt-right-align': isRight,
-          'vgt-left-align': !isRight // for td we need to check if value is
-          // a function.
-
-        };
+          'vgt-left-align': !isRight
+        }; // for td we need to check if value is
+        // a function.
 
         if (typeof custom === 'function') {
           classes[custom(row)] = true;
@@ -14256,7 +14663,7 @@
       },
       // method to filter rows
       filterRows: function filterRows(columnFilters) {
-        var _this5 = this;
+        var _this10 = this;
 
         var fromFilter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
         // if (!this.rows.length) return;
@@ -14267,64 +14674,101 @@
         // if not we don't need to do anything
 
         if (this.columnFilters && Object.keys(this.columnFilters).length) {
-          // every time we filter rows, we need to set current page
-          // to 1
-          // if the mode is remote, we only need to reset, if this is
-          // being called from filter, not when rows are changing
-          if (this.mode !== 'remote' || fromFilter) {
-            this.changePage(1);
-          } // we need to emit an event and that's that.
-          // but this only needs to be invoked if filter is changing
-          // not when row object is modified.
+          var _ret = function () {
+            // every time we filter rows, we need to set current page
+            // to 1
+            // if the mode is remote, we only need to reset, if this is
+            // being called from filter, not when rows are changing
+            if (_this10.mode !== 'remote' || fromFilter) {
+              _this10.changePage(1);
+            } // we need to emit an event and that's that.
+            // but this only needs to be invoked if filter is changing
+            // not when row object is modified.
 
 
-          if (fromFilter) {
-            this.$emit('on-column-filter', {
-              columnFilters: this.columnFilters
-            });
-          } // if mode is remote, we don't do any filtering here.
-
-
-          if (this.mode === 'remote') {
             if (fromFilter) {
-              this.$emit('update:isLoading', true);
-            } else {
-              // if remote filtering has already been taken care of.
-              this.filteredRows = computedRows;
-            }
-
-            return;
-          }
-
-          var _loop = function _loop(i) {
-            var col = _this5.typedColumns[i];
-
-            if (_this5.columnFilters[col.field]) {
-              computedRows = lodash_foreach(computedRows, function (headerRow) {
-                var newChildren = headerRow.children.filter(function (row) {
-                  // If column has a custom filter, use that.
-                  if (col.filterOptions && typeof col.filterOptions.filterFn === 'function') {
-                    return col.filterOptions.filterFn(_this5.collect(row, col.field), _this5.columnFilters[col.field]);
-                  } // Otherwise Use default filters
-
-
-                  var typeDef = col.typeDef;
-                  return typeDef.filterPredicate(_this5.collect(row, col.field), _this5.columnFilters[col.field]);
-                }); // should we remove the header?
-
-                headerRow.children = newChildren;
+              _this10.$emit('on-column-filter', {
+                columnFilters: _this10.columnFilters
               });
-            }
-          };
+            } // if mode is remote, we don't do any filtering here.
 
-          for (var i = 0; i < this.typedColumns.length; i++) {
-            _loop(i);
-          }
+
+            if (_this10.mode === 'remote') {
+              if (fromFilter) {
+                _this10.$emit('update:isLoading', true);
+              } else {
+                // if remote filtering has already been taken care of.
+                _this10.filteredRows = computedRows;
+              }
+
+              return {
+                v: void 0
+              };
+            }
+
+            var fieldKey = function fieldKey(field) {
+              if (typeof field === 'function' && field.name) {
+                return field.name;
+              }
+
+              return field;
+            };
+
+            var _loop = function _loop(i) {
+              var col = _this10.typedColumns[i];
+
+              if (_this10.columnFilters[fieldKey(col.field)]) {
+                computedRows = lodash_foreach(computedRows, function (headerRow) {
+                  var newChildren = headerRow.children.filter(function (row) {
+                    // If column has a custom filter, use that.
+                    if (col.filterOptions && typeof col.filterOptions.filterFn === 'function') {
+                      return col.filterOptions.filterFn(_this10.collect(row, col.field), _this10.columnFilters[fieldKey(col.field)]);
+                    } // Otherwise Use default filters
+
+
+                    var typeDef = col.typeDef;
+                    return typeDef.filterPredicate(_this10.collect(row, col.field), _this10.columnFilters[fieldKey(col.field)], false, col.filterOptions && _typeof(col.filterOptions.filterDropdownItems) === 'object');
+                  }); // should we remove the header?
+
+                  headerRow.children = newChildren;
+                });
+              }
+            };
+
+            for (var i = 0; i < _this10.typedColumns.length; i++) {
+              _loop(i);
+            }
+          }();
+
+          if (_typeof(_ret) === "object") return _ret.v;
         }
 
         this.filteredRows = computedRows;
       },
-      getCurrentIndex: function getCurrentIndex(index) {
+      getCurrentIndex: function getCurrentIndex(rowId) {
+        var index = 0;
+        var found = false;
+
+        for (var i = 0; i < this.paginated.length; i += 1) {
+          var headerRow = this.paginated[i];
+          var children = headerRow.children;
+
+          if (children && children.length) {
+            for (var j = 0; j < children.length; j += 1) {
+              var c = children[j];
+
+              if (c.originalIndex === rowId) {
+                found = true;
+                break;
+              }
+
+              index += 1;
+            }
+          }
+
+          if (found) break;
+        }
+
         return (this.currentPage - 1) * this.currentPerPage + index + 1;
       },
       getRowStyleClass: function getRowStyleClass(row) {
@@ -14345,8 +14789,15 @@
         return classes;
       },
       handleGrouped: function handleGrouped(originalRows) {
+        var _this11 = this;
+
         lodash_foreach(originalRows, function (headerRow, i) {
           headerRow.vgt_header_id = i;
+
+          if (_this11.groupOptions.maintainExpanded && _this11.expandedRowKeys.has(headerRow[_this11.groupOptions.rowKey])) {
+            _this11.$set(headerRow, 'vgtIsExpanded', true);
+          }
+
           lodash_foreach(headerRow.children, function (childRow) {
             childRow.vgt_id = i;
           });
@@ -14354,22 +14805,23 @@
         return originalRows;
       },
       initializePagination: function initializePagination() {
-        var _this6 = this;
+        var _this12 = this;
 
-        var _this$paginationOptio = this.paginationOptions,
-            enabled = _this$paginationOptio.enabled,
-            perPage = _this$paginationOptio.perPage,
-            position = _this$paginationOptio.position,
-            perPageDropdown = _this$paginationOptio.perPageDropdown,
-            dropdownAllowAll = _this$paginationOptio.dropdownAllowAll,
-            nextLabel = _this$paginationOptio.nextLabel,
-            prevLabel = _this$paginationOptio.prevLabel,
-            rowsPerPageLabel = _this$paginationOptio.rowsPerPageLabel,
-            ofLabel = _this$paginationOptio.ofLabel,
-            pageLabel = _this$paginationOptio.pageLabel,
-            allLabel = _this$paginationOptio.allLabel,
-            setCurrentPage = _this$paginationOptio.setCurrentPage,
-            mode = _this$paginationOptio.mode;
+        var _this$paginationOptio2 = this.paginationOptions,
+            enabled = _this$paginationOptio2.enabled,
+            perPage = _this$paginationOptio2.perPage,
+            position = _this$paginationOptio2.position,
+            perPageDropdown = _this$paginationOptio2.perPageDropdown,
+            perPageDropdownEnabled = _this$paginationOptio2.perPageDropdownEnabled,
+            dropdownAllowAll = _this$paginationOptio2.dropdownAllowAll,
+            nextLabel = _this$paginationOptio2.nextLabel,
+            prevLabel = _this$paginationOptio2.prevLabel,
+            rowsPerPageLabel = _this$paginationOptio2.rowsPerPageLabel,
+            ofLabel = _this$paginationOptio2.ofLabel,
+            pageLabel = _this$paginationOptio2.pageLabel,
+            allLabel = _this$paginationOptio2.allLabel,
+            setCurrentPage = _this$paginationOptio2.setCurrentPage,
+            mode = _this$paginationOptio2.mode;
 
         if (typeof enabled === 'boolean') {
           this.paginate = enabled;
@@ -14392,11 +14844,14 @@
           this.customRowsPerPageDropdown = perPageDropdown;
 
           if (!this.perPage) {
-
             var _perPageDropdown = _slicedToArray(perPageDropdown, 1);
 
             this.perPage = _perPageDropdown[0];
           }
+        }
+
+        if (typeof perPageDropdownEnabled === 'boolean') {
+          this.perPageDropdownEnabled = perPageDropdownEnabled;
         }
 
         if (typeof dropdownAllowAll === 'boolean') {
@@ -14433,7 +14888,7 @@
 
         if (typeof setCurrentPage === 'number') {
           setTimeout(function () {
-            _this6.changePage(setCurrentPage);
+            _this12.changePage(setCurrentPage);
           }, 500);
         }
       },
@@ -14499,7 +14954,8 @@
             clearSelectionText = _this$selectOptions.clearSelectionText,
             selectOnCheckboxOnly = _this$selectOptions.selectOnCheckboxOnly,
             selectAllByPage = _this$selectOptions.selectAllByPage,
-            disableSelectInfo = _this$selectOptions.disableSelectInfo;
+            disableSelectInfo = _this$selectOptions.disableSelectInfo,
+            selectAllByGroup = _this$selectOptions.selectAllByGroup;
 
         if (typeof enabled === 'boolean') {
           this.selectable = enabled;
@@ -14511,6 +14967,10 @@
 
         if (typeof selectAllByPage === 'boolean') {
           this.selectAllByPage = selectAllByPage;
+        }
+
+        if (typeof selectAllByGroup === 'boolean') {
+          this.selectAllByGroup = selectAllByGroup;
         }
 
         if (typeof disableSelectInfo === 'boolean') {
@@ -14528,13 +14988,7 @@
         if (typeof clearSelectionText === 'string') {
           this.clearSelectionText = clearSelectionText;
         }
-      } // initializeColumns() {
-      //   // take care of default sort on mount
-      //   if (this.defaultSortBy) {
-      //     this.handleDefaultSort();
-      //   }
-      // },
-
+      }
     },
     mounted: function mounted() {
       if (this.perPage) {
@@ -14544,10 +14998,10 @@
       this.initializeSort();
     },
     components: {
-      'vgt-pagination': VgtPagination,
-      'vgt-global-search': VgtGlobalSearch,
-      'vgt-header-row': VgtHeaderRow,
-      'vgt-table-header': VgtTableHeader
+      'vgt-pagination': __vue_component__$1,
+      'vgt-global-search': __vue_component__$2,
+      'vgt-header-row': __vue_component__$5,
+      'vgt-table-header': __vue_component__$4
     }
   };
 
@@ -14568,7 +15022,7 @@
       staticClass: "vgt-loading vgt-center-align"
     }, [_vm._t("loadingContent", [_c('span', {
       staticClass: "vgt-loading__content"
-    }, [_vm._v("Loading...")])])], 2) : _vm._e(), _vm._v(" "), _c('div', {
+    }, [_vm._v("\n        Loading...\n      ")])])], 2) : _vm._e(), _vm._v(" "), _c('div', {
       staticClass: "vgt-inner-wrap",
       "class": {
         'is-loading': _vm.isLoading
@@ -14583,6 +15037,7 @@
         "nextText": _vm.nextText,
         "prevText": _vm.prevText,
         "rowsPerPageText": _vm.rowsPerPageText,
+        "perPageDropdownEnabled": _vm.paginationOptions.perPageDropdownEnabled,
         "customRowsPerPageDropdown": _vm.customRowsPerPageDropdown,
         "paginateDropdownAllowAll": _vm.paginateDropdownAllowAll,
         "ofText": _vm.ofText,
@@ -14628,13 +15083,23 @@
           return _vm.unselectAllInternal(true);
         }
       }
-    }, [_vm._v(_vm._s(_vm.clearSelectionText))]), _vm._v(" "), _c('div', {
+    }, [_vm._v("\n        " + _vm._s(_vm.clearSelectionText) + "\n      ")]), _vm._v(" "), _c('div', {
       staticClass: "vgt-selection-info-row__actions vgt-pull-right"
     }, [_vm._t("selected-row-actions")], 2)]) : _vm._e(), _vm._v(" "), _c('div', {
       staticClass: "vgt-fixed-header"
     }, [_vm.fixedHeader ? _c('table', {
-      "class": _vm.tableStyleClasses
-    }, [_c("vgt-table-header", {
+      "class": _vm.tableStyleClasses,
+      attrs: {
+        "id": "vgt-table"
+      }
+    }, [_c('colgroup', _vm._l(_vm.columns, function (column, index) {
+      return _c('col', {
+        key: index,
+        attrs: {
+          "id": "col-" + index
+        }
+      });
+    }), 0), _vm._v(" "), _c("vgt-table-header", {
       ref: "table-header-secondary",
       tag: "thead",
       attrs: {
@@ -14663,6 +15128,14 @@
             "column": props.column
           })];
         }
+      }, {
+        key: "column-filter",
+        fn: function fn(props) {
+          return [_vm._t("column-filter", null, {
+            "column": props.column,
+            "updateFilters": props.updateFilters
+          })];
+        }
       }], null, true)
     })], 1) : _vm._e()]), _vm._v(" "), _c('div', {
       "class": {
@@ -14671,8 +15144,18 @@
       style: _vm.wrapperStyles
     }, [_c('table', {
       ref: "table",
-      "class": _vm.tableStyleClasses
-    }, [_c("vgt-table-header", {
+      "class": _vm.tableStyles,
+      attrs: {
+        "id": "vgt-table"
+      }
+    }, [_c('colgroup', _vm._l(_vm.columns, function (column, index) {
+      return _c('col', {
+        key: index,
+        attrs: {
+          "id": "col-" + index
+        }
+      });
+    }), 0), _vm._v(" "), _c("vgt-table-header", {
       ref: "table-header-primary",
       tag: "thead",
       attrs: {
@@ -14699,20 +15182,40 @@
             "column": props.column
           })];
         }
+      }, {
+        key: "column-filter",
+        fn: function fn(props) {
+          return [_vm._t("column-filter", null, {
+            "column": props.column,
+            "updateFilters": props.updateFilters
+          })];
+        }
       }], null, true)
-    }), _vm._v(" "), _vm._l(_vm.paginated, function (headerRow, index) {
+    }), _vm._v(" "), _vm._l(_vm.paginated, function (headerRow, hIndex) {
       return _c('tbody', {
-        key: index
+        key: hIndex
       }, [_vm.groupHeaderOnTop ? _c('vgt-header-row', {
+        "class": _vm.getRowStyleClass(headerRow),
         attrs: {
           "header-row": headerRow,
           "columns": _vm.columns,
           "line-numbers": _vm.lineNumbers,
           "selectable": _vm.selectable,
+          "select-all-by-group": _vm.selectAllByGroup,
+          "collapsable": _vm.groupOptions.collapsable,
           "collect-formatted": _vm.collectFormatted,
           "formatted-row": _vm.formattedRow,
           "get-classes": _vm.getClasses,
-          "full-colspan": _vm.fullColspan
+          "full-colspan": _vm.fullColspan,
+          "groupIndex": hIndex
+        },
+        on: {
+          "vgtExpand": function vgtExpand($event) {
+            return _vm.toggleExpand(headerRow[_vm.rowKeyField]);
+          },
+          "on-select-group-change": function onSelectGroupChange($event) {
+            return _vm.toggleSelectGroup($event, headerRow);
+          }
         },
         scopedSlots: _vm._u([{
           key: "table-header-row",
@@ -14725,7 +15228,7 @@
           }
         }], null, true)
       }) : _vm._e(), _vm._v(" "), _vm._l(headerRow.children, function (row, index) {
-        return [_c('tr', {
+        return [(_vm.groupOptions.collapsable ? headerRow.vgtIsExpanded : true) ? _c('tr', {
           key: row.originalIndex,
           "class": _vm.getRowStyleClass(row),
           on: {
@@ -14747,7 +15250,7 @@
           }
         }, [_vm.lineNumbers ? _c('th', {
           staticClass: "line-numbers"
-        }, [_vm._v(_vm._s(_vm.getCurrentIndex(index)))]) : _vm._e(), _vm._v(" "), _vm.selectable ? _c('th', {
+        }, [_vm._v("\n                " + _vm._s(_vm.getCurrentIndex(row.originalIndex)) + "\n              ")]) : _vm._e(), _vm._v(" "), _vm.selectable ? _c('th', {
           staticClass: "vgt-checkbox-col",
           on: {
             "click": function click($event) {
@@ -14757,7 +15260,8 @@
           }
         }, [_c('input', {
           attrs: {
-            "type": "checkbox"
+            "type": "checkbox",
+            "disabled": row.vgtDisabled
           },
           domProps: {
             "checked": row.vgtSelected
@@ -14766,22 +15270,25 @@
           return !column.hidden && column.field ? _c('td', {
             key: i,
             "class": _vm.getClasses(i, 'td', row),
+            attrs: {
+              "data-label": _vm.compactMode ? column.label : undefined
+            },
             on: {
               "click": function click($event) {
                 return _vm.onCellClicked(row, column, index, $event);
               }
             }
-          }, [_vm._t("table-row", [!column.html ? _c('span', [_vm._v(_vm._s(_vm.collectFormatted(row, column)))]) : _vm._e(), _vm._v(" "), column.html ? _c('span', {
+          }, [_vm._t("table-row", [!column.html ? _c('span', [_vm._v("\n                    " + _vm._s(_vm.collectFormatted(row, column)) + "\n                  ")]) : _c('span', {
             domProps: {
               "innerHTML": _vm._s(_vm.collect(row, column.field))
             }
-          }) : _vm._e()], {
+          })], {
             "row": row,
             "column": column,
             "formattedRow": _vm.formattedRow(row),
             "index": index
           })], 2) : _vm._e();
-        })], 2), _vm._v(" "), _vm.hasExpandedSlot && _vm.isExpanded(row) ? _c('tr', {
+        })], 2) : _vm._e(), _vm._v(" "), _vm.hasExpandedSlot && _vm.isExpanded(row) ? _c('tr', {
           key: row.originalIndex + '-expanded',
           "class": _vm.expandedStyleClass
         }, [_c('td', {
@@ -14799,10 +15306,17 @@
           "columns": _vm.columns,
           "line-numbers": _vm.lineNumbers,
           "selectable": _vm.selectable,
+          "select-all-by-group": _vm.selectAllByGroup,
           "collect-formatted": _vm.collectFormatted,
           "formatted-row": _vm.formattedRow,
           "get-classes": _vm.getClasses,
-          "full-colspan": _vm.fullColspan
+          "full-colspan": _vm.fullColspan,
+          "groupIndex": _vm.index
+        },
+        on: {
+          "on-select-group-change": function onSelectGroupChange($event) {
+            return _vm.toggleSelectGroup($event, headerRow);
+          }
         },
         scopedSlots: _vm._u([{
           key: "table-header-row",
@@ -14821,7 +15335,7 @@
       }
     }, [_vm._t("emptystate", [_c('div', {
       staticClass: "vgt-center-align vgt-text-disabled"
-    }, [_vm._v("No data for table")])])], 2)])]) : _vm._e()], 2)]), _vm._v(" "), _vm.hasFooterSlot ? _c('div', {
+    }, [_vm._v("\n                  No data for table\n                ")])])], 2)])]) : _vm._e()], 2)]), _vm._v(" "), _vm.hasFooterSlot ? _c('div', {
       staticClass: "vgt-wrap__actions-footer"
     }, [_vm._t("table-actions-bottom")], 2) : _vm._e(), _vm._v(" "), _vm.paginate && _vm.paginateOnBottom ? _vm._t("pagination-bottom", [_c('vgt-pagination', {
       ref: "paginationBottom",
@@ -14833,6 +15347,7 @@
         "nextText": _vm.nextText,
         "prevText": _vm.prevText,
         "rowsPerPageText": _vm.rowsPerPageText,
+        "perPageDropdownEnabled": _vm.paginationOptions.perPageDropdownEnabled,
         "customRowsPerPageDropdown": _vm.customRowsPerPageDropdown,
         "paginateDropdownAllowAll": _vm.paginateDropdownAllowAll,
         "ofText": _vm.ofText,
@@ -14867,14 +15382,16 @@
 
   /* style inject SSR */
 
-  var VueGoodTable = normalizeComponent_1({
+  /* style inject shadow dom */
+
+  var __vue_component__$6 = /*#__PURE__*/normalizeComponent({
     render: __vue_render__$6,
     staticRenderFns: __vue_staticRenderFns__$6
-  }, __vue_inject_styles__$6, __vue_script__$6, __vue_scope_id__$6, __vue_is_functional_template__$6, __vue_module_identifier__$6, undefined, undefined);
+  }, __vue_inject_styles__$6, __vue_script__$6, __vue_scope_id__$6, __vue_is_functional_template__$6, __vue_module_identifier__$6, false, undefined, undefined, undefined);
 
   var VueGoodTablePlugin = {
     install: function install(Vue, options) {
-      Vue.component(VueGoodTable.name, VueGoodTable);
+      Vue.component(__vue_component__$6.name, __vue_component__$6);
     }
   }; // Automatic installation if Vue has been added to the global scope.
 
@@ -14882,9 +15399,9 @@
     window.Vue.use(VueGoodTablePlugin);
   }
 
-  exports.VueGoodTable = VueGoodTable;
+  exports.VueGoodTable = __vue_component__$6;
   exports.default = VueGoodTablePlugin;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
-}));
+})));

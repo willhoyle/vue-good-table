@@ -2,9 +2,6 @@
   direction: rtl;
 
   .vgt-table{
-    td, th:not(.line-numbers) {
-      padding: .75em .75em .75em 1.5em;
-    }
     thead th, &.condensed thead th {
       padding-left:  1.5em;
       padding-right:  .75em;
@@ -13,6 +10,12 @@
     th.sorting-asc:after{
       margin-right:  5px;
       margin-left:  0px;
+    }
+
+    th.sortable:after, 
+    th.sortable:before {
+      right: inherit;
+      left: 6px;
     }
   }
 }

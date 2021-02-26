@@ -24,22 +24,20 @@
         selectOnCheckboxOnly: false,
         disableSelectInfo: true,
       }"
-      theme="black-rhino"
+      theme="nocturnal"
       styleClass="vgt-table bordered"
       :sort-options="{
         enabled: true,
-        initialSortBy: [{field: 'name', type: 'asc'}],
       }"
       :search-options="{
         enabled: true,
         skipDiacritics: true,
-        externalQuery: searchTerm,
       }">
     </vue-good-table>
     <h3>Remote Table</h3>
-    <!-- <remote-table/> -->
+    <remote-table/>
     <h3>Grouped Table</h3>
-    <!-- <grouped-table></grouped-table> -->
+     <grouped-table></grouped-table>
   </div>
 </template>
 
@@ -60,6 +58,7 @@ export default {
         enabled: true,
         perPage: 5,
         perPageDropdown: [50, 100, 200, 300, 500, 1000],
+        perPageDropdownEnabled: false,
       },
       columns: [
         {
@@ -75,17 +74,30 @@ export default {
         },
         {
           label: 'Age',
-          field: obj => obj.age,
+          field: 'age',
           type: 'number',
+          firstSortType: 'desc',
           filterOptions: {
             enabled: true,
-            // filterValue: 20,
+            filterDropdownItems: ['24', '16', '30'],
+            styleClass: 'class1'
+            // filterDropdownItems: [
+            //   {
+            //     value: 24,
+            //     text: '24',
+            //   },
+            //   {
+            //     value: 16,
+            //     text: '16',
+            //   },
+            // ],
           },
         },
         {
           filterOptions: {
             enabled: true,
           },
+          sortable: false,
           label: 'Created On',
           field: 'createdAt',
           type: 'date',
@@ -104,7 +116,7 @@ export default {
         },
         {
           label: 'Valid',
-          field: 'bool',
+          field: this.fieldValid,
           type: 'boolean',
           filterOptions: {
             enabled: true,
@@ -114,6 +126,17 @@ export default {
             ],
           },
         },
+        {
+          label: 'Exact',
+          field: this.fieldExact,
+          filterOptions: {
+            enabled: true,
+            filterDropdownItems: [
+              'match',
+              'rematch',
+            ],
+          },
+        }
       ],
       rows: [
         // { id:1, name:"John", age: 20, createdAt: '2018-02-18T00:00:43-05:00',score: 0.03343 },
@@ -124,6 +147,8 @@ export default {
           createdAt: '2011-10-31',
           score: 0.03343,
           bool: true,
+          exact: 'match',
+          average: 1
         },
         {
           id: 3,
@@ -132,6 +157,8 @@ export default {
           createdAt: '2011-10-30',
           score: 0.03343,
           bool: true,
+          exact: 'match',
+          average: null
         },
         {
           id: 4,
@@ -140,6 +167,7 @@ export default {
           createdAt: '2011-10-11',
           score: 0.03343,
           bool: false,
+          exact: null
         },
         {
           id: 5,
@@ -148,6 +176,8 @@ export default {
           createdAt: '',
           score: 0.03343,
           bool: null,
+          exact: 'rematch',
+          average: 2
         },
         {
           id: 5,
@@ -156,6 +186,8 @@ export default {
           createdAt: null,
           score: 0.03343,
           bool: null,
+          exact: 'rematch',
+          average: 3
         },
         {
           id: 5,
@@ -164,6 +196,8 @@ export default {
           createdAt: null,
           score: 0.03343,
           bool: null,
+          exact: null,
+          average: 2
         },
         {
           id: 6,
@@ -172,6 +206,8 @@ export default {
           createdAt: '2011-10-31',
           score: 0.03343,
           bool: true,
+          exact: 'match',
+          average: 1.5
         },
         {
           id: 7,
@@ -180,6 +216,8 @@ export default {
           createdAt: '2013-09-21',
           score: null,
           bool: 'false',
+          exact: null,
+          average: 1
         },
         {
           id: 8,
@@ -188,11 +226,19 @@ export default {
           createdAt: '2013-10-31',
           score: 0.03343,
           bool: true,
+          exact: 'rematch',
+          average: 1
         },
       ],
     };
   },
   methods: {
+    fieldValid(row) {
+      return row.bool;
+    },
+    fieldExact(row) {
+      return row.exact;
+    },
     changePage() {
       this.currentPage += 1;
       this.$set(this.paginationOptions, 'setCurrentPage', this.currentPage);
@@ -397,4 +443,3 @@ export default {
     background: red;
   } */
 </style>
-
