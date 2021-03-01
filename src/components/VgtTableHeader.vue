@@ -55,9 +55,8 @@
 </template>
 
 <script>
-import assign from 'lodash.assign';
 import VgtFilterRow from './VgtFilterRow.vue';
-import * as SortUtils from './utils/sort.js';
+import { primarySort, secondarySort } from './utils/sort';
 
 export default {
   name: 'VgtTableHeader',
@@ -165,9 +164,9 @@ export default {
       if (!this.isSortableColumn(column)) return;
 
       if (e.shiftKey) {
-        this.sorts = SortUtils.secondarySort(this.sorts, column);
+        this.sorts = secondarySort(this.sorts, column);
       } else {
-        this.sorts = SortUtils.primarySort(this.sorts, column);
+        this.sorts = primarySort(this.sorts, column);
       }
       this.$emit('on-sort-change', this.sorts);
     },
@@ -193,7 +192,7 @@ export default {
     },
 
     getHeaderClasses(column, index) {
-      const classes = assign({}, this.getClasses(index, 'th'), {
+      const classes = Object.assign({}, this.getClasses(index, 'th'), {
         sortable: this.isSortableColumn(column),
         'sorting sorting-desc': this.getColumnSort(column) === 'desc',
         'sorting sorting-asc': this.getColumnSort(column) === 'asc',
@@ -258,23 +257,27 @@ export default {
   mounted() {
     this.$nextTick(() => {
       // We're going to watch the parent element for resize events, and calculate column widths if it changes
-      this.ro = new ResizeObserver(() => {
-          this.setColumnStyles();
-      });
-      this.ro.observe(this.$parent.$el);
-      
-      // If this is a fixed-header table, we want to observe each column header from the non-fixed header.
-      // You can imagine two columns swapping widths, which wouldn't cause the above to trigger.
-      // This gets the first tr element of the primary table header, and iterates through its children (the th elements)
-      if (this.tableRef) {
-        Array.from(this.$parent.$refs['table-header-primary'].$el.children[0].children).forEach((header) => {
-          this.ro.observe(header);
-        })
+      if (ResizeObserver) {
+        this.ro = new ResizeObserver(() => {
+            this.setColumnStyles();
+        });
+        this.ro.observe(this.$parent.$el);
+        
+        // If this is a fixed-header table, we want to observe each column header from the non-fixed header.
+        // You can imagine two columns swapping widths, which wouldn't cause the above to trigger.
+        // This gets the first tr element of the primary table header, and iterates through its children (the th elements)
+        if (this.tableRef) {
+          Array.from(this.$parent.$refs['table-header-primary'].$el.children[0].children).forEach((header) => {
+            this.ro.observe(header);
+          })
+        }
       }
     });
   },
   beforeDestroy() {
-    this.ro.disconnect();
+    if (this.ro) {
+      this.ro.disconnect();
+    } 
   },
   components: {
     'vgt-filter-row': VgtFilterRow,
