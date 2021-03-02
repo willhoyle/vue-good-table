@@ -89,6 +89,7 @@
             :all-selected-indeterminate="allSelectedIndeterminate"
             :mode="mode"
             :sortable="sortable"
+            :multiple-column-sort="multipleColumnSort"
             :typed-columns="typedColumns"
             :getClasses="getClasses"
             :searchEnabled="searchEnabled"
@@ -145,6 +146,7 @@
             :all-selected-indeterminate="allSelectedIndeterminate"
             :mode="mode"
             :sortable="sortable"
+            :multiple-column-sort="multipleColumnSort"
             :typed-columns="typedColumns"
             :getClasses="getClasses"
             :searchEnabled="searchEnabled"
@@ -357,6 +359,10 @@
 </template>
 
 <script>
+import {
+  DEFAULT_SORT_TYPE,
+  SORT_TYPES,
+} from './utils/constants';
 import isEqual from 'lodash.isequal';
 import defaultType from './types/default';
 import VgtPagination from './pagination/VgtPagination.vue';
@@ -420,6 +426,7 @@ export default {
       default() {
         return {
           enabled: true,
+          multipleColumns: true,
           initialSortBy: {},
         };
       },
@@ -494,6 +501,7 @@ export default {
     // internal sort options
     sortable: true,
     defaultSortBy: null,
+    multipleColumnSort: true,
 
     // internal search options
     searchEnabled: false,
@@ -807,7 +815,8 @@ export default {
         });
         const filteredRows = [];
         allRows.forEach((row) => {
-          this.columns.forEach((col) => {
+          for (let i = 0; i < this.columns.length; i += 1) {
+            const col = this.columns[i];
             // if col does not have search disabled,
             if (!col.globalSearchDisabled) {
               // if a search function is provided,
@@ -822,7 +831,7 @@ export default {
                 );
                 if (foundMatch) {
                   filteredRows.push(row);
-                  return false; // break the loop
+                  break; // break the loop
                 }
               } else {
                 // comparison
@@ -833,11 +842,11 @@ export default {
                 );
                 if (matched) {
                   filteredRows.push(row);
-                  return false; // break loop
+                  break; // break loop
                 }
               }
             }
-          });
+          }
         });
 
         // this is where we emit on search
@@ -852,6 +861,7 @@ export default {
         this.filteredRows.forEach((headerRow) => {
           const i = headerRow.vgt_header_id;
           const children = filteredRows.filter((r) => r.vgt_id === i);
+          console.log(children);
           if (children.length) {
             const newHeaderRow = JSON.parse(JSON.stringify(headerRow));
             newHeaderRow.children = children;
@@ -866,23 +876,30 @@ export default {
             //* we need to get column for each sort
             let sortValue;
             for (let i = 0; i < this.sorts.length; i += 1) {
-              const column = this.getColumnForField(this.sorts[i].field);
-              const xvalue = this.collect(xRow, this.sorts[i].field);
-              const yvalue = this.collect(yRow, this.sorts[i].field);
+              const srt = this.sorts[i];
 
-              //* if a custom sort function has been provided we use that
-              const { sortFn } = column;
-              if (sortFn && typeof sortFn === 'function') {
-                sortValue =
-                  sortValue ||
-                  sortFn(xvalue, yvalue, column, xRow, yRow) *
-                    (this.sorts[i].type === 'desc' ? -1 : 1);
-              } else {
-                //* else we use our own sort
-                sortValue =
-                  sortValue ||
-                  column.typeDef.compare(xvalue, yvalue, column) *
-                    (this.sorts[i].type === 'desc' ? -1 : 1);
+              if (srt.type === SORT_TYPES.None) {
+                //* if no sort, we need to use the original index to sort.
+                sortValue = sortValue || (xRow.originalIndex - yRow.originalIndex);
+              } else{
+                const column = this.getColumnForField(srt.field);
+                const xvalue = this.collect(xRow, srt.field);
+                const yvalue = this.collect(yRow, srt.field);
+  
+                //* if a custom sort function has been provided we use that
+                const { sortFn } = column;
+                if (sortFn && typeof sortFn === 'function') {
+                  sortValue =
+                    sortValue ||
+                    sortFn(xvalue, yvalue, column, xRow, yRow) *
+                      (srt.type === SORT_TYPES.Descending ? -1 : 1);
+                } else {
+                  //* else we use our own sort
+                  sortValue =
+                    sortValue ||
+                    column.typeDef.compare(xvalue, yvalue, column) *
+                      (srt.type === SORT_TYPES.Descending ? -1 : 1);
+                }
               }
             }
             return sortValue;
@@ -1608,25 +1625,30 @@ export default {
     },
 
     initializeSort() {
-      const { enabled, initialSortBy } = this.sortOptions;
+      const { enabled, initialSortBy, multipleColumns } = this.sortOptions;
+      const initSortBy = JSON.parse(JSON.stringify(initialSortBy));
 
       if (typeof enabled === 'boolean') {
         this.sortable = enabled;
       }
 
+      if (typeof multipleColumns === 'boolean') {
+        this.multipleColumnSort = multipleColumns;
+      }
+
       //* initialSortBy can be an array or an object
-      if (typeof initialSortBy === 'object') {
+      if (typeof initSortBy === 'object') {
         const ref = this.fixedHeader
           ? this.$refs['table-header-secondary']
           : this.$refs['table-header-primary'];
-        if (Array.isArray(initialSortBy)) {
-          ref.setInitialSort(initialSortBy);
+        if (Array.isArray(initSortBy)) {
+          ref.setInitialSort(initSortBy);
         } else {
           const hasField = Object.prototype.hasOwnProperty.call(
-            initialSortBy,
+            initSortBy,
             'field'
           );
-          if (hasField) ref.setInitialSort([initialSortBy]);
+          if (hasField) ref.setInitialSort([initSortBy]);
         }
       }
     },

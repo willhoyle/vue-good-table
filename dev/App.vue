@@ -28,6 +28,7 @@
       styleClass="vgt-table bordered"
       :sort-options="{
         enabled: true,
+        multipleColumns: false,
       }"
       :search-options="{
         enabled: true,
@@ -54,8 +55,8 @@ export default {
       rowStyleClass: 'red',
       searchTerm: '',
       paginationOptions: {
+        enabled: false,
         mode: 'records',
-        enabled: true,
         perPage: 5,
         perPageDropdown: [3, 50, 100, 200, 300, 500, 1000],
         perPageDropdownEnabled: true,
@@ -69,6 +70,7 @@ export default {
           filterOptions: {
             enabled: true,
             placeholder: 'All',
+            trigger: 'enter',
             // filterDropdownItems: ['Chris', 'Dan', 'Susan'],
             // filterValue: 'Chris',
           },
@@ -80,8 +82,9 @@ export default {
           firstSortType: 'desc',
           filterOptions: {
             enabled: true,
-            filterDropdownItems: ['24', '16', '30'],
-            styleClass: 'class1'
+            // filterDropdownItems: ['24', '16', '30'],
+            styleClass: 'class1',
+            trigger: 'enter',
             // filterDropdownItems: [
             //   {
             //     value: 24,
