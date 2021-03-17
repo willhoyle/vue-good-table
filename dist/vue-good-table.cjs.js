@@ -1,5 +1,5 @@
 /**
- * vue-good-table v2.21.7
+ * vue-good-table v2.21.8
  * (c) 2018-present xaksis <shay@crayonbits.com>
  * https://github.com/xaksis/vue-good-table
  * Released under the MIT License.
@@ -2516,7 +2516,7 @@ var script$1 = {
         });
       }
 
-      this.changePage(1, false);
+      this.changePage(1, true);
     },
     // Handle per page changing
     handlePerPage: function handlePerPage() {
@@ -2796,7 +2796,7 @@ var __vue_render__$2 = function __vue_render__() {
     attrs: {
       "id": _vm.id,
       "type": "text",
-      "placeholder": null
+      "placeholder": _vm.globalSearchPlaceholder
     },
     domProps: {
       "value": _vm.value
@@ -3472,6 +3472,7 @@ var __vue_render__$4 = function __vue_render__() {
       style: _vm.columnStyles[index],
       attrs: {
         "scope": "col",
+        "title": column.tooltip,
         "aria-sort": _vm.getColumnSortLong(column),
         "aria-controls": "col-" + index
       }
@@ -3888,7 +3889,7 @@ function toDate(argument) {
  *
  * @example
  * // Add 750 milliseconds to 10 July 2014 12:45:30.000:
- * var result = addMilliseconds(new Date(2014, 6, 10, 12, 45, 30, 0), 750)
+ * const result = addMilliseconds(new Date(2014, 6, 10, 12, 45, 30, 0), 750)
  * //=> Thu Jul 10 2014 12:45:30.750
  */
 
@@ -3946,12 +3947,12 @@ function getTimezoneOffsetInMilliseconds(dirtyDate) {
  *
  * @example
  * // Compare 11 February 1987 and 10 July 1989:
- * var result = compareAsc(new Date(1987, 1, 11), new Date(1989, 6, 10))
+ * const result = compareAsc(new Date(1987, 1, 11), new Date(1989, 6, 10))
  * //=> -1
  *
  * @example
  * // Sort the array of dates:
- * var result = [
+ * const result = [
  *   new Date(1995, 6, 2),
  *   new Date(1987, 1, 11),
  *   new Date(1989, 6, 10)
@@ -4570,7 +4571,7 @@ var locale = {
  *
  * @example
  * // Subtract 750 milliseconds from 10 July 2014 12:45:30.000:
- * var result = subMilliseconds(new Date(2014, 6, 10, 12, 45, 30, 0), 750)
+ * const result = subMilliseconds(new Date(2014, 6, 10, 12, 45, 30, 0), 750)
  * //=> Thu Jul 10 2014 12:45:29.250
  */
 
@@ -4636,8 +4637,10 @@ var formatters = {
     switch (token) {
       case 'a':
       case 'aa':
-      case 'aaa':
         return dayPeriodEnumValue.toUpperCase();
+
+      case 'aaa':
+        return dayPeriodEnumValue;
 
       case 'aaaaa':
         return dayPeriodEnumValue[0];
@@ -5375,11 +5378,16 @@ var formatters$1 = {
     switch (token) {
       case 'a':
       case 'aa':
-      case 'aaa':
         return localize.dayPeriod(dayPeriodEnumValue, {
           width: 'abbreviated',
           context: 'formatting'
         });
+
+      case 'aaa':
+        return localize.dayPeriod(dayPeriodEnumValue, {
+          width: 'abbreviated',
+          context: 'formatting'
+        }).toLowerCase();
 
       case 'aaaaa':
         return localize.dayPeriod(dayPeriodEnumValue, {
@@ -5411,11 +5419,16 @@ var formatters$1 = {
     switch (token) {
       case 'b':
       case 'bb':
-      case 'bbb':
         return localize.dayPeriod(dayPeriodEnumValue, {
           width: 'abbreviated',
           context: 'formatting'
         });
+
+      case 'bbb':
+        return localize.dayPeriod(dayPeriodEnumValue, {
+          width: 'abbreviated',
+          context: 'formatting'
+        }).toLowerCase();
 
       case 'bbbbb':
         return localize.dayPeriod(dayPeriodEnumValue, {
@@ -5926,10 +5939,12 @@ var unescapedLatinCharacterRegExp = /[a-zA-Z]/;
  * |                                 | cccc    | Monday, Tuesday, ..., Sunday      | 2     |
  * |                                 | ccccc   | M, T, W, T, F, S, S               |       |
  * |                                 | cccccc  | Mo, Tu, We, Th, Fr, Su, Sa        |       |
- * | AM, PM                          | a..aaa  | AM, PM                            |       |
+ * | AM, PM                          | a..aa   | AM, PM                            |       |
+ * |                                 | aaa     | am, pm                            |       |
  * |                                 | aaaa    | a.m., p.m.                        | 2     |
  * |                                 | aaaaa   | a, p                              |       |
- * | AM, PM, noon, midnight          | b..bbb  | AM, PM, noon, midnight            |       |
+ * | AM, PM, noon, midnight          | b..bb   | AM, PM, noon, midnight            |       |
+ * |                                 | bbb     | am, pm, noon, midnight            |       |
  * |                                 | bbbb    | a.m., p.m., noon, midnight        | 2     |
  * |                                 | bbbbb   | a, p, n, mi                       |       |
  * | Flexible day period             | B..BBB  | at night, in the morning, ...     |       |
@@ -5975,18 +5990,18 @@ var unescapedLatinCharacterRegExp = /[a-zA-Z]/;
  * |                                 | tt      | ...                               | 3,7   |
  * | Milliseconds timestamp          | T       | 512969520900                      | 7     |
  * |                                 | TT      | ...                               | 3,7   |
- * | Long localized date             | P       | 05/29/1453                        | 7     |
- * |                                 | PP      | May 29, 1453                      | 7     |
- * |                                 | PPP     | May 29th, 1453                    | 7     |
- * |                                 | PPPP    | Sunday, May 29th, 1453            | 2,7   |
+ * | Long localized date             | P       | 04/29/1453                        | 7     |
+ * |                                 | PP      | Apr 29, 1453                      | 7     |
+ * |                                 | PPP     | April 29th, 1453                  | 7     |
+ * |                                 | PPPP    | Friday, April 29th, 1453          | 2,7   |
  * | Long localized time             | p       | 12:00 AM                          | 7     |
  * |                                 | pp      | 12:00:00 AM                       | 7     |
  * |                                 | ppp     | 12:00:00 AM GMT+2                 | 7     |
  * |                                 | pppp    | 12:00:00 AM GMT+02:00             | 2,7   |
- * | Combination of date and time    | Pp      | 05/29/1453, 12:00 AM              | 7     |
- * |                                 | PPpp    | May 29, 1453, 12:00:00 AM         | 7     |
- * |                                 | PPPppp  | May 29th, 1453 at ...             | 7     |
- * |                                 | PPPPpppp| Sunday, May 29th, 1453 at ...     | 2,7   |
+ * | Combination of date and time    | Pp      | 04/29/1453, 12:00 AM              | 7     |
+ * |                                 | PPpp    | Apr 29, 1453, 12:00:00 AM         | 7     |
+ * |                                 | PPPppp  | April 29th, 1453 at ...           | 7     |
+ * |                                 | PPPPpppp| Friday, April 29th, 1453 at ...   | 2,7   |
  * Notes:
  * 1. "Formatting" units (e.g. formatting quarter) in the default en-US locale
  *    are the same as "stand-alone" units, but are different in some languages.
@@ -8095,8 +8110,9 @@ var unescapedLatinCharacterRegExp$1 = /[a-zA-Z]/;
  *   // Before v2.0.0
  *   parse('2016-01-01')
  *
- *   // v2.0.0 onward
- *   toDate('2016-01-01')
+ *   // v2.0.0 onward (toDate no longer accepts a string)
+ *   toDate(1392098430000) // Unix to timestamp
+ *   toDate(new Date(2014, 1, 11, 11, 30, 30)) // Cloning the date
  *   parse('2016-01-01', 'yyyy-MM-dd', new Date())
  *   ```
  *
@@ -9702,7 +9718,7 @@ var script$6 = {
           enabled = _this$sortOptions.enabled,
           initialSortBy = _this$sortOptions.initialSortBy,
           multipleColumns = _this$sortOptions.multipleColumns;
-      var initSortBy = JSON.parse(JSON.stringify(initialSortBy));
+      var initSortBy = JSON.parse(JSON.stringify(initialSortBy || {}));
 
       if (typeof enabled === 'boolean') {
         this.sortable = enabled;

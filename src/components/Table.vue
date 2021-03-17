@@ -1626,7 +1626,7 @@ export default {
 
     initializeSort() {
       const { enabled, initialSortBy, multipleColumns } = this.sortOptions;
-      const initSortBy = JSON.parse(JSON.stringify(initialSortBy));
+      const initSortBy = JSON.parse(JSON.stringify(initialSortBy || {}));
 
       if (typeof enabled === 'boolean') {
         this.sortable = enabled;
