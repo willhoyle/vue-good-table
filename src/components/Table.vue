@@ -861,7 +861,6 @@ export default {
         this.filteredRows.forEach((headerRow) => {
           const i = headerRow.vgt_header_id;
           const children = filteredRows.filter((r) => r.vgt_id === i);
-          console.log(children);
           if (children.length) {
             const newHeaderRow = JSON.parse(JSON.stringify(headerRow));
             newHeaderRow.children = children;
@@ -1148,11 +1147,13 @@ export default {
 
     pageChanged(pagination) {
       this.currentPage = pagination.currentPage;
-      const pageChangedEvent = this.pageChangedEvent();
-      pageChangedEvent.prevPage = pagination.prevPage;
-      this.$emit('on-page-change', pageChangedEvent);
-      if (this.mode === 'remote') {
-        this.$emit('update:isLoading', true);
+      if (!pagination.noEmit) {
+        const pageChangedEvent = this.pageChangedEvent();
+        pageChangedEvent.prevPage = pagination.prevPage;
+        this.$emit('on-page-change', pageChangedEvent);
+        if (this.mode === 'remote') {
+          this.$emit('update:isLoading', true);
+        }
       }
     },
 
@@ -1445,7 +1446,7 @@ export default {
           }
         }
       }
-      this.filteredRows = computedRows;
+      this.filteredRows = computedRows.filter((h) => h.children && h.children.length);
     },
 
     getCurrentIndex(rowId) {
