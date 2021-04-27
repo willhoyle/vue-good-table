@@ -9,17 +9,17 @@
     @on-sort-change="onSortChange"
     @on-column-filter="onColumnFilter"
     @on-per-page-change="onPerPageChange"
+    compactMode
     :pagination-options="{
       enabled: true,
       perPage: 5,
       perPageDropdown: [20, 50, 100, 200],
       dropdownAllowAll: false,
-      position: 'top',
     }"
     :search-options="{
       enabled: false,
     }"
-    styleClass="vgt-table condensed bordered">
+    styleClass="vgt-table condensed bordered striped">
   </vue-good-table>
 </div>
 </template>
@@ -47,6 +47,16 @@ export default {
           type: 'number',
           filterOptions: {
             enabled: true,
+            filterDropdownItems: [
+              {
+                value: 24,
+                text: '24',
+              },
+              {
+                value: 16,
+                text: '16',
+              },
+            ],
             // filterValue: 20,
           },
         },
@@ -54,19 +64,19 @@ export default {
           label: 'Created On',
           field: 'createdAt',
           type: 'date',
-          dateInputFormat: 'YYYY-MM-DD',
-          dateOutputFormat: 'LLL',
+          dateInputFormat: 'yyyy-MM-dd',
+          dateOutputFormat: 'PPPP',
         },
         {
           label: 'Percent',
           field: 'score',
           type: 'percentage',
         },
-        {
-          label: 'func',
-          field: this.funcValue,
-          type: 'number',
-        },
+        // {
+        //   label: 'func',
+        //   field: this.funcValue,
+        //   type: 'number',
+        // },
         {
           label: 'Valid',
           field: 'bool',
@@ -189,7 +199,7 @@ export default {
     onPerPageChange(params) {
       console.log('per page change called');
       console.log(params);
-      this.updateParams({perPage: params.currentPerPage});
+      this.updateParams({ perPage: params.currentPerPage });
       this.loadItems();
     },
 

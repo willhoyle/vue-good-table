@@ -55,6 +55,7 @@ module.exports = {
           children: [
             '/guide/style-configuration/',
             '/guide/style-configuration/style-classes',
+            '/guide/style-configuration/sass',
           ]
         },
       ],

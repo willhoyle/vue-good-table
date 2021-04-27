@@ -1,8 +1,39 @@
+import {
+  DEFAULT_SORT_TYPE,
+  SORT_TYPES,
+} from './constants';
 
-function getNextSort(currentSort) {
-  if (currentSort === 'asc') return 'desc';
-  // if (currentSort === 'desc') return null;
-  return 'asc';
+function getColumnFirstSortType(column) {
+  return column.firstSortType || DEFAULT_SORT_TYPE;
+}
+
+function getCurrentPrimarySort(sortArray, column) {
+  return ( sortArray.length === 1 && sortArray[0].field === column.field )
+  ? sortArray[0].type
+  : undefined;
+}
+
+function getNextSort(currentSort, column) {
+  if (SORT_TYPES.Descending === getColumnFirstSortType(column)
+    && currentSort === SORT_TYPES.Ascending) {
+    return SORT_TYPES.None
+  } else if (currentSort === SORT_TYPES.Ascending) {
+    return SORT_TYPES.Descending;
+  }
+  if (SORT_TYPES.Descending === getColumnFirstSortType(column)
+    && currentSort === SORT_TYPES.Descending) {
+    return SORT_TYPES.Ascending;
+  } else if (currentSort === SORT_TYPES.Descending) {
+    return SORT_TYPES.None;
+  }
+
+  if (SORT_TYPES.Descending === getColumnFirstSortType(column)
+    && currentSort === SORT_TYPES.None) {
+    return SORT_TYPES.Descending;
+  } else {
+    return SORT_TYPES.Ascending;
+  }
+
 }
 
 function getIndex(sortArray, column) {
@@ -12,41 +43,29 @@ function getIndex(sortArray, column) {
   return -1;
 }
 
-exports.primarySort = (sortArray, column) => {
-  if (sortArray.length
-    && sortArray.length === 1
-    && sortArray[0].field === column.field) {
-    const type = getNextSort(sortArray[0].type);
-    if (type) {
-      sortArray[0].type = getNextSort(sortArray[0].type);
-    } else {
-      sortArray = [];
-    }
-  } else {
-    sortArray = [{
-      field: column.field,
-      type: 'asc',
-    }];
-  }
-  return sortArray;
+const primarySort = (sortArray, column) => {
+  const currentPrimarySort = getCurrentPrimarySort(sortArray, column);
+  const nextPrimarySort = getNextSort(currentPrimarySort, column);
+  return [{
+    field: column.field,
+    type: currentPrimarySort ? nextPrimarySort : getColumnFirstSortType(column),
+  }];
 };
 
-exports.secondarySort = (sortArray, column) => {
-  //* this means that primary sort exists, we're
-  //* just adding a secondary sort
+const secondarySort = (sortArray, column) => {
   const index = getIndex(sortArray, column);
   if (index === -1) {
     sortArray.push({
       field: column.field,
-      type: 'asc',
+      type: getColumnFirstSortType(column),
     });
   } else {
-    const type = getNextSort(sortArray[index].type);
-    if (type) {
-      sortArray[index].type = type;
-    } else {
-      sortArray.splice(index, 1);
-    }
+    sortArray[index].type = getNextSort(sortArray[index].type, column);
   }
   return sortArray;
 };
+
+export {
+  primarySort,
+  secondarySort,
+}

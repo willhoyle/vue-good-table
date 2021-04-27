@@ -26,8 +26,26 @@
     color: $text-color;
     border-bottom:  1px solid $border-color;
     background: linear-gradient($thead-bg-color-1, $thead-bg-color-2);
-    &.sorting-asc, &.sorting-desc {
-      color: darken($text-color, 15%);
+    &.sortable {
+      // color: lighten($text-color, 15%);
+      &:before{
+        border-top-color: $chevron-color;
+      }
+      &:after{
+        border-bottom-color: $chevron-color;
+      }
+      &.sorting-asc{
+        color: white;
+        &:after{
+          border-bottom-color: $link-color;
+        }
+      }
+      &.sorting-desc {
+        color: white;
+        &:before{
+          border-top-color: $link-color;
+        }
+      }
     }
   }
   
@@ -54,14 +72,39 @@
     border: 1px solid $border-color;
     background: linear-gradient($thead-bg-color-1, $thead-bg-color-2);
     .footer__row-count{
+      position: relative;
       &__label{
         color: $secondary-text-color;
       }
       &__select{
         color:  $text-color;
+        background: darken($thead-bg-color-2, 5%);
+        border: none;
+        -webkit-appearance: none; 
+        -moz-appearance: none;
+        appearance: none;
+        padding-right: 15px;
+        padding-left: 10px;
+        border-radius: 3px;
+        text-align: center;
         &:focus{
           border-color: $link-color;
         }
+      }
+      &::after{
+        content: '';
+        display: block;
+        position: absolute;
+        height: 0px;
+        width: 0px;
+        right: 6px;
+        top: 50%;
+        margin-top: -1px;
+        border-top:  6px solid $text-color;
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-bottom: none;
+        pointer-events: none
       }
     }
     .footer__navigation{

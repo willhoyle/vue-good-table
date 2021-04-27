@@ -1,51 +1,87 @@
+$footer-font-size: 1.1rem;
+
 .vgt-wrap__actions-footer{
   border: 1px solid $border-color;
 }
 .vgt-wrap__footer{
   color: $text-color;
+  font-size:  $footer-font-size;
   padding:  1em;
   border: 1px solid $border-color;
   background: linear-gradient($thead-bg-color-1, $thead-bg-color-2);
   .footer__row-count{
+    position: relative;
+    padding-right: 3px;
     &__label, &__select{
       display: inline-block;
       vertical-align: middle;
     }
     &__label{
-      font-size: 14px;
-      color: $secondary-text-color;
+      font-size: $footer-font-size;
     }
     &__select{
+      font-size: $footer-font-size;
       background-color: transparent;
       width: auto;
       padding: 0;
       border: 0;
       border-radius: 0;
       height: auto;
-      font-size: 14px;
       margin-left: 8px;
       color:  $text-color;
       font-weight: bold;
+      -webkit-appearance: none; 
+      -moz-appearance: none;
+      appearance: none;
+      padding-right: 15px;
+      padding-left: 5px;
+      &::-ms-expand{
+        display: none;
+      }
       &:focus{
         outline: none;
         border-color: $link-color;
       }
     }
+    &::after{
+      content: '';
+      display: block;
+      position: absolute;
+      height: 0px;
+      width: 0px;
+      right: 6px;
+      top: 50%;
+      margin-top: -1px;
+      border-top:  6px solid $text-color;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-bottom: none;
+      pointer-events: none
+    }
   }
   .footer__navigation{
-    font-size: 14px;
+    > button:first-of-type {
+      margin-right: 16px;
+    } 
+    font-size: $footer-font-size;
     &__page-btn, &__info, &__page-info{
       display: inline-block;
       vertical-align: middle;
+      color: $secondary-text-color;
     }
     &__page-btn{
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background: transparent;
+      border: none;
       text-decoration: none;
       color: $text-color;
       font-weight: bold;
       white-space:nowrap;
-      &:focus{
-        outline: none;
-        border: 0;
+      vertical-align: middle;
+      &:hover{
+        cursor: pointer;
       }
       &.disabled,
       &.disabled:hover {
@@ -58,12 +94,19 @@
           border-left-color: $text-color;
         }
       }
+      span{
+        display: inline-block;
+        vertical-align: middle;
+        font-size: $footer-font-size;
+      }
       .chevron{
         width:  24px;
         height:  24px;
         border-radius: 15%;
         position:  relative;
-        margin:  0px 8px;
+        margin:  0;
+        display: inline-block;
+        vertical-align: middle;
         &:after{
           content:  '';
           position:  absolute;
@@ -87,18 +130,24 @@
     }
     &__info, &__page-info{
       display: inline-block;
-      color: $secondary-text-color;
       margin:  0px 16px;
     }
     &__page-info{
+      span{
+        display: inline-block;
+        vertical-align: middle;
+      }
       &__current-entry{
         width: 30px;
         text-align: center;
+        vertical-align: middle;
         display: inline-block;
         margin: 0px 10px;
         font-weight: bold;
       }
     }
+  
+  
   }
 }
 

@@ -1,4 +1,4 @@
-import diacriticless from 'diacriticless';
+import { diacriticless } from '../utils/diacritics';
 
 const escapeRegExp = str => str.replace(/[\\^$*+?.()|[\]{}]/g, '\\$&');
 
@@ -6,7 +6,7 @@ export default {
   format(x) {
     return x;
   },
-  filterPredicate(rowval, filter, skipDiacritics = false) {
+  filterPredicate(rowval, filter, skipDiacritics = false, fromDropdown = false) {
     // take care of nulls
     if (typeof rowval === 'undefined' || rowval === null) {
       return false;
@@ -23,13 +23,13 @@ export default {
       : diacriticless(escapeRegExp(filter).toLowerCase());
 
     // comparison
-    return (rowValue.indexOf(searchTerm) > -1);
+    return fromDropdown ? rowValue === searchTerm : (rowValue.indexOf(searchTerm) > -1);
   },
 
   compare(x, y) {
     function cook(d) {
       if (typeof d === 'undefined' || d === null) return '';
-      return diacriticless(d.toLowerCase());
+      return diacriticless(String(d).toLowerCase());
     }
     x = cook(x);
     y = cook(y);

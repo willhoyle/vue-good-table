@@ -1,22 +1,34 @@
 <template>
 <div>
+  <button @click="expandAll">Expand All</button>
+  <button @click="collapseAll">Collapse All</button>
   <vue-good-table
     :columns="columns"
     :rows="rows"
     :line-numbers="true"
-    :select-options="{enabled: true}"
+    :select-options="{
+      enabled: true,
+      selectAllByGroup: true,
+    }"
     @on-select-all="onSelectAll"
     @on-search="onSelectAll"
     @on-row-mouseenter="onMouseover"
     @on-row-mouseleave="onMouseover"
     :search-options="{
+      enabled: true,
+    }"
+    :pagination-options="{
       enabled: false,
+      perPage: 5,
     }"
     :group-options="{
       enabled: true,
       headerPosition: 'top',
+      collapsable: false,
     }"
-    styleClass="vgt-table condensed bordered">
+    styleClass="vgt-table condensed bordered"
+    ref="groupedTable"
+  >
     <!-- <template slot="table-header-row" slot-scope="props">
       <span v-if="props.row.mode === 'span'">
         My header label is - <strong>{{ props.row.label }}</strong>
@@ -67,10 +79,13 @@ export default {
             { name: 'Cat', diet: 'carnivore', count: 28 },
             { name: 'Dog', diet: 'omnivore', count: 12 },
             { name: 'Dolphin', diet: 'carnivore', count: 9 },
+            { name: 'Shrew', diet: 'carnivore', count: 9 },
+            { name: 'Monkey', diet: 'carnivore', count: 9 },
           ],
         },
         {
-          name: 'Reptile Total',
+          label: 'Reptile Total',
+          mode: 'span',
           diet: '',
           count: '',
           children: [
@@ -78,6 +93,7 @@ export default {
             { name: 'lizard', diet: 'insectivore', count: 34 },
             { name: 'crocodile', diet: 'carnivore', count: 22 },
             { name: 'turtles', diet: 'herbivore', count: 29 },
+            { name: 'alligator', diet: 'herbivore', count: 29 },
           ],
         },
         {
@@ -96,6 +112,12 @@ export default {
   computed: {
   },
   methods: {
+    expandAll() {
+      this.$refs.groupedTable.expandAll();
+    },
+    collapseAll() {
+      this.$refs.groupedTable.collapseAll();
+    },
     onSelectAll(params) {
       console.log(params);
     },
